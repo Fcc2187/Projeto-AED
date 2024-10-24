@@ -210,7 +210,7 @@ int main(int argc, char* argv[]) {
         SDL_DestroyTexture(churchTexture);
 
         // Desenhar o playground (emoji de parque infantil)
-        SDL_Surface* surfacePlayground = TTF_RenderUTF8_Blended(font, "🎠", white); // Emoji de parque infantil
+        SDL_Surface* surfacePlayground = TTF_RenderUTF8_Blended(font, "🛝", white); // Emoji de parque infantil
         SDL_Texture* playgroundTexture = SDL_CreateTextureFromSurface(renderer, surfacePlayground);
         SDL_FreeSurface(surfacePlayground);
 
