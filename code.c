@@ -71,11 +71,65 @@ int main(int argc, char* argv[]) {
     drawTree(renderer, 650, 300);  // Árvore 2 na direita
     drawTree(renderer, 650, 500);  // Árvore 3 na direita
 
-    // Atualizar a janela com o novo conteúdo
-    SDL_RenderPresent(renderer);
+    // Inicializar posição do player
+    SDL_Rect player = { 390, 550, 20, 40 }; // Player no meio da estrada
 
-    // Manter a janela aberta por 10 segundos
-    SDL_Delay(10000);
+    // Variáveis de controle do jogo
+    int running = 1;
+    SDL_Event event;
+    int speed = 5;
+
+    while (running) {
+        // Processar eventos
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_QUIT) {
+                running = 0;
+            } else if (event.type == SDL_KEYDOWN) {
+                switch (event.key.keysym.sym) {
+                    case SDLK_LEFT:
+                        // Mover o player para a esquerda
+                        player.x -= speed;
+                        if (player.x < 200) player.x = 200; // Limite da estrada à esquerda
+                        break;
+                    case SDLK_RIGHT:
+                        // Mover o player para a direita
+                        player.x += speed;
+                        if (player.x + player.w > 600) player.x = 600 - player.w; // Limite da estrada à direita
+                        break;
+                }
+            }
+        }
+
+        // Limpar a tela
+        SDL_SetRenderDrawColor(renderer, 34, 139, 34, 255); // Verde para as laterais
+        SDL_RenderClear(renderer);
+
+        // Redesenhar as laterais (verde)
+        SDL_RenderFillRect(renderer, &leftRect);
+        SDL_RenderFillRect(renderer, &rightRect);
+
+        // Redesenhar a estrada (cinza)
+        SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255); // Cinza para a estrada
+        SDL_RenderFillRect(renderer, &middleRect);
+
+        // Redesenhar árvores
+        drawTree(renderer, 50, 100);
+        drawTree(renderer, 50, 300);
+        drawTree(renderer, 50, 500);
+        drawTree(renderer, 650, 100);
+        drawTree(renderer, 650, 300);
+        drawTree(renderer, 650, 500);
+
+        // Desenhar o player (retângulo vermelho)
+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // Vermelho (RGB: 255, 0, 0)
+        SDL_RenderFillRect(renderer, &player);
+
+        // Atualizar a tela
+        SDL_RenderPresent(renderer);
+
+        // Controlar a taxa de atualização
+        SDL_Delay(16); // Aproximadamente 60 FPS
+    }
 
     // Limpar e fechar
     SDL_DestroyRenderer(renderer);
