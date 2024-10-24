@@ -73,10 +73,10 @@ int main(int argc, char* argv[]) {
     Uint32 startTime = SDL_GetTicks();
 
     while (running) {
-        // Verificar se já se passaram 5 segundos (5000 milissegundos)
+        // Verificar se já se passaram 25 segundos (25000 milissegundos)
         Uint32 elapsedTime = SDL_GetTicks() - startTime;
-        if (elapsedTime > 5000) {
-            running = 0; // Sair do loop após 5 segundos
+        if (elapsedTime > 25000) {
+            running = 0; // Sair do loop após 25 segundos
         }
 
         // Processar eventos
@@ -144,6 +144,13 @@ int main(int argc, char* argv[]) {
         drawTree(renderer, 650, 100);
         drawTree(renderer, 650, 300);
         drawTree(renderer, 650, 500);
+
+        // Desenhar uma faixa horizontal de pedestre seccionada na parte superior cinza
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // Branco (RGB: 255, 255, 255)
+        for (int i = 0; i < 400; i += 20) {
+            SDL_Rect pedestrian = { 200 + i, 50, 10, 100 }; // Faixa de pedestre seccionada
+            SDL_RenderFillRect(renderer, &pedestrian);
+        }
 
         // Desenhar o player (retângulo vermelho)
         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // Vermelho (RGB: 255, 0, 0)
