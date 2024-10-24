@@ -79,7 +79,16 @@ int main(int argc, char* argv[]) {
     SDL_Event event;
     int speed = 5;
 
+    // Capturar o tempo inicial
+    Uint32 startTime = SDL_GetTicks();
+
     while (running) {
+        // Verificar se já se passaram 15 segundos (15000 milissegundos)
+        Uint32 elapsedTime = SDL_GetTicks() - startTime;
+        if (elapsedTime > 15000) {
+            running = 0; // Sair do loop após 15 segundos
+        }
+
         // Processar eventos
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
