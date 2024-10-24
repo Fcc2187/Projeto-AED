@@ -1,21 +1,64 @@
 #include <SDL2/SDL.h>
 #include <stdio.h>
+#include <stdlib.h>
 
-void drawTree(SDL_Renderer* renderer, int x, int y) {
-    // Desenhar o tronco da árvore (retângulo marrom)
-    SDL_SetRenderDrawColor(renderer, 139, 69, 19, 255); // Marrom (RGB: 139, 69, 19)
-    SDL_Rect trunk = { x + 20, y + 50, 20, 50 }; // Tronco da árvore
-    SDL_RenderFillRect(renderer, &trunk);
+#define MAX_INIMIGOS 100
 
-    // Desenhar a copa da árvore (verde mais escuro logo acima do tronco)
-    SDL_SetRenderDrawColor(renderer, 0, 100, 0, 255); // Verde mais escuro (RGB: 0, 100, 0)
-    SDL_Rect darkFoliage = { x, y + 20, 60, 30 };   // Folhagem superior mais escura
-    SDL_RenderFillRect(renderer, &darkFoliage);
+// Estrutura para um inimigo
+typedef struct Inimigo {
+    int x, y, w, h;
+    struct Inimigo* prox;
+} Inimigo;
 
-    // Desenhar a folhagem inferior da árvore (verde mais escuro logo acima do tronco)
-    SDL_SetRenderDrawColor(renderer, 0, 100, 0, 255); // Verde mais escuro (RGB: 0, 100, 0)
-    SDL_Rect foliage = { x + 10, y + 25, 40, 30 }; // Folhagem inferior, mais próxima do tronco
-    SDL_RenderFillRect(renderer, &foliage);
+// Estrutura para a fila de inimigos
+typedef struct {
+    Inimigo* frente;
+    Inimigo* tras;
+} FilaInimigos;
+
+// Função para inicializar a fila
+void inicializarFila(FilaInimigos* fila) {
+    fila->frente = fila->tras = NULL;
+}
+
+// Função para adicionar inimigo na fila
+void adicionarInimigo(FilaInimigos* fila, int x, int y) {
+    Inimigo* novoInimigo = (Inimigo*)malloc(sizeof(Inimigo));
+    novoInimigo->x = x;
+    novoInimigo->y = y;
+    novoInimigo->w = 20;
+    novoInimigo->h = 20;
+    novoInimigo->prox = NULL;
+
+    if (fila->tras == NULL) {
+        fila->frente = fila->tras = novoInimigo;
+    } else {
+        fila->tras->prox = novoInimigo;
+        fila->tras = novoInimigo;
+    }
+}
+
+// Função para remover inimigo da fila (quando sair da tela)
+void removerInimigo(FilaInimigos* fila) {
+    if (fila->frente != NULL) {
+        Inimigo* temp = fila->frente;
+        fila->frente = fila->frente->prox;
+        free(temp);
+        if (fila->frente == NULL) {
+            fila->tras = NULL;
+        }
+    }
+}
+
+// Função para verificar colisão
+int verificarColisao(SDL_Rect* player, Inimigo* inimigo) {
+    if (player->x < inimigo->x + inimigo->w &&
+        player->x + player->w > inimigo->x &&
+        player->y < inimigo->y + inimigo->h &&
+        player->y + player->h > inimigo->y) {
+        return 1; // Houve colisão
+    }
+    return 0;
 }
 
 int main(int argc, char* argv[]) {
@@ -49,17 +92,9 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    // Definir cor verde (cor de folha) para as laterais
-    SDL_SetRenderDrawColor(renderer, 34, 139, 34, 255); // Verde escuro (RGB: 34, 139, 34)
-    SDL_Rect leftRect = { 0, 0, 200, 600 };  // Lateral esquerda
-    SDL_Rect rightRect = { 600, 0, 200, 600 };  // Lateral direita
-    SDL_RenderFillRect(renderer, &leftRect);
-    SDL_RenderFillRect(renderer, &rightRect);
-
-    // Definir cor cinza (cor de asfalto) para a parte do meio
-    SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255); // Cinza (RGB: 128, 128, 128)
-    SDL_Rect middleRect = { 200, 0, 400, 600 };  // Parte do meio
-    SDL_RenderFillRect(renderer, &middleRect);
+    // Inicializar a fila de inimigos
+    FilaInimigos filaInimigos;
+    inicializarFila(&filaInimigos);
 
     // Inicializar posição do player
     SDL_Rect player = { 390, 550, 20, 40 }; // Player no meio da estrada
@@ -68,6 +103,7 @@ int main(int argc, char* argv[]) {
     int running = 1;
     SDL_Event event;
     int speed = 5;
+    int tempoParaNovoInimigo = 0; // Controlar o tempo para criar novos inimigos
 
     // Capturar o tempo inicial
     Uint32 startTime = SDL_GetTicks();
@@ -104,63 +140,57 @@ int main(int argc, char* argv[]) {
         SDL_RenderClear(renderer);
 
         // Redesenhar as laterais (verde)
+        SDL_Rect leftRect = { 0, 0, 200, 600 };
+        SDL_Rect rightRect = { 600, 0, 200, 600 };
         SDL_RenderFillRect(renderer, &leftRect);
         SDL_RenderFillRect(renderer, &rightRect);
 
         // Redesenhar a estrada (cinza)
         SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255); // Cinza para a estrada
+        SDL_Rect middleRect = { 200, 0, 400, 600 };
         SDL_RenderFillRect(renderer, &middleRect);
-
-        // Desenhar um retângulo branco onde estava a árvore à esquerda
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // Branco (RGB: 255, 255, 255)
-        SDL_Rect whiteRect = { 50, 100, 70, 100 };  // Tamanho similar ao da árvore
-        SDL_RenderFillRect(renderer, &whiteRect);
-
-        // Desenhar um quadrado branco ao lado direito do retângulo
-        SDL_Rect whiteSquare = { 110, 140, 60, 60 };  // Quadrado com 80x80 ao lado direito do retângulo
-        SDL_RenderFillRect(renderer, &whiteSquare);
-
-        // Desenhar uma porta marrom
-        SDL_SetRenderDrawColor(renderer, 139, 69, 19, 255); // Marrom (RGB: 139, 69, 19)
-        SDL_Rect door = { 60, 140, 40, 60 };  // Porta marrom
-        SDL_RenderFillRect(renderer, &door);
-
-        // Desenhar uma cruz preta acima do retângulo branco
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Cor preta (RGB: 0, 0, 0)
-
-        // Coordenadas para a cruz
-        int crossX = 80; // X central da cruz
-        int crossY = 80; // Y central da cruz
-
-        // Linha vertical da cruz
-        SDL_RenderDrawLine(renderer, crossX, crossY - 10, crossX, crossY + 20); // Linha vertical
-
-        // Linha horizontal da cruz
-        SDL_RenderDrawLine(renderer, crossX - 10, crossY, crossX + 10, crossY); // Linha horizontal
-
-        // Redesenhar as árvores restantes
-        drawTree(renderer, 50, 300);
-        drawTree(renderer, 50, 500);
-        drawTree(renderer, 650, 100);
-        drawTree(renderer, 650, 300);
-        drawTree(renderer, 650, 500);
-
-        // Desenhar uma faixa horizontal de pedestre seccionada na parte superior cinza
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // Branco (RGB: 255, 255, 255)
-        for (int i = 0; i < 400; i += 20) {
-            SDL_Rect pedestrian = { 200 + i, 50, 10, 100 }; // Faixa de pedestre seccionada
-            SDL_RenderFillRect(renderer, &pedestrian);
-        }
 
         // Desenhar o player (retângulo vermelho)
         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // Vermelho (RGB: 255, 0, 0)
         SDL_RenderFillRect(renderer, &player);
+
+        // Criar novos inimigos a cada 1 segundo (1000 ms)
+        if (tempoParaNovoInimigo > 400) {
+            int inimigoX = 200 + rand() % 380; // Posição aleatória na estrada (parte cinza)
+            adicionarInimigo(&filaInimigos, inimigoX, 0); // Adicionar inimigo no topo
+            tempoParaNovoInimigo = 0; // Resetar o tempo
+        }
+
+        // Atualizar posição dos inimigos
+        Inimigo* atual = filaInimigos.frente;
+        while (atual != NULL) {
+            atual->y += 5; // Descer o inimigo
+            if (atual->y > 600) {
+                removerInimigo(&filaInimigos); // Remover inimigos que saíram da tela
+            }
+            if (verificarColisao(&player, atual)) {
+                running = 0; // Fim de jogo se colidir com o player
+            }
+            atual = atual->prox;
+        }
+
+        // Desenhar os inimigos
+        atual = filaInimigos.frente;
+        SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255); // Azul para os inimigos
+        while (atual != NULL) {
+            SDL_Rect inimigoRect = { atual->x, atual->y, atual->w, atual->h };
+            SDL_RenderFillRect(renderer, &inimigoRect);
+            atual = atual->prox;
+        }
 
         // Atualizar a tela
         SDL_RenderPresent(renderer);
 
         // Controlar a taxa de atualização
         SDL_Delay(16); // Aproximadamente 60 FPS
+
+        // Incrementar o tempo para novos inimigos
+        tempoParaNovoInimigo += 16;
     }
 
     // Limpar e fechar
