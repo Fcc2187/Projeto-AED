@@ -131,8 +131,8 @@ int main(int argc, char* argv[]) {
     srand(time(NULL));
 
     // Posições fixas das árvores (X e Y) - agora com 9 árvores
-    int posicoesArvores[10] = {50, 50, 650, 650, 650, 50, 650, 50, 650 }; // X fixo para a esquerda e direita
-    int alturasArvores[10] = {180, 300, 100, 200, 300, 400, 400, 500, 500 }; // Alturas fixas das árvores
+    int posicoesArvores[10] = {50, 50, 650, 650, 650, 50, 650, 50 }; // X fixo para a esquerda e direita
+    int alturasArvores[10] = {180, 300, 100, 200, 300, 400, 400, 500}; // Alturas fixas das árvores
 
     // Definindo tamanhos dos emojis
     int playerEmojiWidth = 30; // Largura do emoji do jogador
@@ -141,11 +141,11 @@ int main(int argc, char* argv[]) {
     int bikeEmojiHeight = 50;    // Altura do emoji da bicicleta
 
     // Adicionar posição e altura da igreja
-    int churchWidth = 125; // Largura da igreja
-    int churchHeight = 125; // Altura da igreja
+    int churchWidth = 130; // Largura da igreja
+    int churchHeight = 130; // Altura da igreja
 
     // Posição do playground
-    SDL_Rect playgroundRect = { 650, 460, 80, 80 }; // Ajuste a posição e tamanho do playground
+    SDL_Rect playgroundRect = { 650, 500, 80, 80 }; // Ajuste a posição e tamanho do playground
 
     while (running) {
         // Verificar se já se passaram 25 segundos (25000 milissegundos)
@@ -204,8 +204,9 @@ int main(int argc, char* argv[]) {
         SDL_Surface* surfaceChurch = TTF_RenderUTF8_Blended(font, "⛪️", white);
         SDL_Texture* churchTexture = SDL_CreateTextureFromSurface(renderer, surfaceChurch);
         SDL_FreeSurface(surfaceChurch);
-
-        SDL_Rect churchRect = { posicoesArvores[9], alturasArvores[9], churchWidth, churchHeight }; // Posição e tamanho da igreja
+        int posicaoIgreja = 10;
+        int alturaIgreja = 20;
+        SDL_Rect churchRect = { posicaoIgreja, alturaIgreja, churchWidth, churchHeight }; // Posição e tamanho da igreja
         SDL_RenderCopy(renderer, churchTexture, NULL, &churchRect);
         SDL_DestroyTexture(churchTexture);
 
