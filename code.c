@@ -114,8 +114,9 @@ int main(int argc, char* argv[]) {
     FilaInimigos filaInimigos;
     inicializarFila(&filaInimigos);
 
-    // Inicializar posição do player
-    SDL_Rect player = { 390, 550, 20, 40 }; // Player no meio da estrada
+    // Inicializar posição do player (emoji de pessoa em movimento)
+    SDL_Rect player = { 390, 550, 30, 40 }; // Player no meio da estrada
+    int playerDirection = 0; // 0 para direita, 1 para esquerda
 
     // Variáveis de controle do jogo
     int running = 1;
@@ -129,9 +130,22 @@ int main(int argc, char* argv[]) {
     // Inicializar a semente para números aleatórios
     srand(time(NULL));
 
-    // Posições fixas das árvores (X e Y) - agora com 10 árvores
-    int posicoesArvores[10] = { 50, 50, 50, 650, 650, 650, 50, 650, 50, 650 }; // X fixo para a esquerda e direita
-    int alturasArvores[10] = { 100, 200, 300, 100, 200, 300, 400, 400, 500, 500 }; // Alturas fixas das árvores
+    // Posições fixas das árvores (X e Y) - agora com 9 árvores
+    int posicoesArvores[10] = {50, 50, 650, 650, 650, 50, 650, 50, 650 }; // X fixo para a esquerda e direita
+    int alturasArvores[10] = {180, 300, 100, 200, 300, 400, 400, 500, 500 }; // Alturas fixas das árvores
+
+    // Definindo tamanhos dos emojis
+    int playerEmojiWidth = 30; // Largura do emoji do jogador
+    int playerEmojiHeight = 40; // Altura do emoji do jogador
+    int bikeEmojiWidth = 50;    // Largura do emoji da bicicleta
+    int bikeEmojiHeight = 50;    // Altura do emoji da bicicleta
+
+    // Adicionar posição e altura da igreja
+    int churchWidth = 125; // Largura da igreja
+    int churchHeight = 125; // Altura da igreja
+
+    // Posição do playground
+    SDL_Rect playgroundRect = { 650, 460, 80, 80 }; // Ajuste a posição e tamanho do playground
 
     while (running) {
         // Verificar se já se passaram 25 segundos (25000 milissegundos)
@@ -150,11 +164,13 @@ int main(int argc, char* argv[]) {
                         // Mover o player para a esquerda
                         player.x -= speed;
                         if (player.x < 200) player.x = 200; // Limite da estrada à esquerda
+                        playerDirection = 1; // Direção para a esquerda
                         break;
                     case SDLK_RIGHT:
                         // Mover o player para a direita
                         player.x += speed;
                         if (player.x + player.w > 600) player.x = 600 - player.w; // Limite da estrada à direita
+                        playerDirection = 0; // Direção para a direita
                         break;
                 }
             }
@@ -177,21 +193,45 @@ int main(int argc, char* argv[]) {
         SDL_FreeSurface(surfaceTree);
 
         // Posicionamento das árvores
-        for (int i = 0; i < 10; i++) { // 10 árvores no total
+        for (int i = 0; i < 8; i++) { // 9 árvores no total
             SDL_Rect treeRect = { posicoesArvores[i], alturasArvores[i], 50, 80 }; // Ajustar a posição e o tamanho da árvore
             SDL_RenderCopy(renderer, treeTexture, NULL, &treeRect);
         }
 
         SDL_DestroyTexture(treeTexture);
 
+        // Desenhar a igreja (emoji de igreja) na posição da última árvore
+        SDL_Surface* surfaceChurch = TTF_RenderUTF8_Blended(font, "⛪️", white);
+        SDL_Texture* churchTexture = SDL_CreateTextureFromSurface(renderer, surfaceChurch);
+        SDL_FreeSurface(surfaceChurch);
+
+        SDL_Rect churchRect = { posicoesArvores[9], alturasArvores[9], churchWidth, churchHeight }; // Posição e tamanho da igreja
+        SDL_RenderCopy(renderer, churchTexture, NULL, &churchRect);
+        SDL_DestroyTexture(churchTexture);
+
+        // Desenhar o playground (emoji de parque infantil)
+        SDL_Surface* surfacePlayground = TTF_RenderUTF8_Blended(font, "🎠", white); // Emoji de parque infantil
+        SDL_Texture* playgroundTexture = SDL_CreateTextureFromSurface(renderer, surfacePlayground);
+        SDL_FreeSurface(surfacePlayground);
+
+        SDL_RenderCopy(renderer, playgroundTexture, NULL, &playgroundRect); // Posição do playground
+        SDL_DestroyTexture(playgroundTexture);
+
         // Redesenhar a estrada (cinza)
         SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255); // Cinza para a estrada
         SDL_Rect middleRect = { 200, 0, 400, 600 };
         SDL_RenderFillRect(renderer, &middleRect);
 
-        // Desenhar o player (retângulo vermelho)
-        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // Vermelho (RGB: 255, 0, 0)
-        SDL_RenderFillRect(renderer, &player);
+        // Desenhar o player (emoji de pessoa em movimento)
+        SDL_Surface* surfacePlayer;
+        surfacePlayer = TTF_RenderUTF8_Blended(font, "🏃‍♂️", white); // Emoji de pessoa correndo
+        SDL_Texture* playerTexture = SDL_CreateTextureFromSurface(renderer, surfacePlayer);
+        SDL_FreeSurface(surfacePlayer);
+
+        // Ajustar o tamanho do emoji do personagem
+        SDL_Rect playerRect = { player.x, player.y, playerEmojiWidth, playerEmojiHeight }; // Ajustar a largura e altura do personagem
+        SDL_RenderCopy(renderer, playerTexture, NULL, &playerRect);
+        SDL_DestroyTexture(playerTexture);
 
         // Criar novos inimigos a cada 1 segundo (1000 ms)
         if (tempoParaNovoInimigo > 200) {
@@ -213,15 +253,15 @@ int main(int argc, char* argv[]) {
             atual = atual->prox;
         }
 
-        // Desenhar os inimigos (emoji de bicicleta 🚲)
         atual = filaInimigos.frente;
         while (atual != NULL) {
             SDL_Color white = { 255, 255, 255, 255 };
-            SDL_Surface* surfaceBike = TTF_RenderUTF8_Blended(font, "🚲", white);
+            SDL_Surface* surfaceBike = TTF_RenderUTF8_Blended(font, "🚴", white);
             SDL_Texture* bikeTexture = SDL_CreateTextureFromSurface(renderer, surfaceBike);
             SDL_FreeSurface(surfaceBike);
 
-            SDL_Rect bikeRect = { atual->x, atual->y, 30, 30 }; // Tamanho da bicicleta
+            // Ajustar o tamanho do emoji da bicicleta
+            SDL_Rect bikeRect = { atual->x, atual->y, bikeEmojiWidth, bikeEmojiHeight }; // Ajustar a largura e altura da bicicleta
             SDL_RenderCopy(renderer, bikeTexture, NULL, &bikeRect);
 
             SDL_DestroyTexture(bikeTexture);
