@@ -155,7 +155,7 @@ int main(int argc, char* argv[]) {
         SDL_RenderFillRect(renderer, &player);
 
         // Criar novos inimigos a cada 1 segundo (1000 ms)
-        if (tempoParaNovoInimigo > 400) {
+        if (tempoParaNovoInimigo > 200) {
             int inimigoX = 200 + rand() % 380; // Posição aleatória na estrada (parte cinza)
             adicionarInimigo(&filaInimigos, inimigoX, 0); // Adicionar inimigo no topo
             tempoParaNovoInimigo = 0; // Resetar o tempo
