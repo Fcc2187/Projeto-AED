@@ -1,8 +1,11 @@
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #define MAX_INIMIGOS 100
+#define DISTANCIA_MINIMA 50 // Distância mínima entre as árvores
 
 // Estrutura para um inimigo
 typedef struct Inimigo {
@@ -68,6 +71,19 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    // Inicializar a SDL_ttf
+    if (TTF_Init() == -1) {
+        printf("Erro ao inicializar SDL_ttf: %s\n", TTF_GetError());
+        SDL_Quit();
+        return 1;
+    }
+
+    TTF_Font* font = TTF_OpenFont("/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf", 24);
+    if (!font) {
+        printf("Erro ao carregar a fonte: %s\n", TTF_GetError());
+        return 1;
+    }
+
     // Criar uma janela
     SDL_Window* window = SDL_CreateWindow(
         "Minha janela SDL com Árvores",   // Título da janela
@@ -79,6 +95,7 @@ int main(int argc, char* argv[]) {
 
     if (!window) {
         printf("Erro ao criar a janela: %s\n", SDL_GetError());
+        TTF_Quit();
         SDL_Quit();
         return 1;
     }
@@ -88,6 +105,7 @@ int main(int argc, char* argv[]) {
     if (!renderer) {
         printf("Erro ao criar renderizador: %s\n", SDL_GetError());
         SDL_DestroyWindow(window);
+        TTF_Quit();
         SDL_Quit();
         return 1;
     }
@@ -107,6 +125,13 @@ int main(int argc, char* argv[]) {
 
     // Capturar o tempo inicial
     Uint32 startTime = SDL_GetTicks();
+
+    // Inicializar a semente para números aleatórios
+    srand(time(NULL));
+
+    // Posições fixas das árvores (X e Y) - agora com 10 árvores
+    int posicoesArvores[10] = { 50, 50, 50, 650, 650, 650, 50, 650, 50, 650 }; // X fixo para a esquerda e direita
+    int alturasArvores[10] = { 100, 200, 300, 100, 200, 300, 400, 400, 500, 500 }; // Alturas fixas das árvores
 
     while (running) {
         // Verificar se já se passaram 25 segundos (25000 milissegundos)
@@ -145,6 +170,20 @@ int main(int argc, char* argv[]) {
         SDL_RenderFillRect(renderer, &leftRect);
         SDL_RenderFillRect(renderer, &rightRect);
 
+        // Desenhar as árvores estáticas (emojis de árvore)
+        SDL_Color white = { 255, 255, 255, 255 };
+        SDL_Surface* surfaceTree = TTF_RenderUTF8_Blended(font, "🌳", white);
+        SDL_Texture* treeTexture = SDL_CreateTextureFromSurface(renderer, surfaceTree);
+        SDL_FreeSurface(surfaceTree);
+
+        // Posicionamento das árvores
+        for (int i = 0; i < 10; i++) { // 10 árvores no total
+            SDL_Rect treeRect = { posicoesArvores[i], alturasArvores[i], 50, 80 }; // Ajustar a posição e o tamanho da árvore
+            SDL_RenderCopy(renderer, treeTexture, NULL, &treeRect);
+        }
+
+        SDL_DestroyTexture(treeTexture);
+
         // Redesenhar a estrada (cinza)
         SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255); // Cinza para a estrada
         SDL_Rect middleRect = { 200, 0, 400, 600 };
@@ -174,12 +213,18 @@ int main(int argc, char* argv[]) {
             atual = atual->prox;
         }
 
-        // Desenhar os inimigos
+        // Desenhar os inimigos (emoji de bicicleta 🚲)
         atual = filaInimigos.frente;
-        SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255); // Azul para os inimigos
         while (atual != NULL) {
-            SDL_Rect inimigoRect = { atual->x, atual->y, atual->w, atual->h };
-            SDL_RenderFillRect(renderer, &inimigoRect);
+            SDL_Color white = { 255, 255, 255, 255 };
+            SDL_Surface* surfaceBike = TTF_RenderUTF8_Blended(font, "🚲", white);
+            SDL_Texture* bikeTexture = SDL_CreateTextureFromSurface(renderer, surfaceBike);
+            SDL_FreeSurface(surfaceBike);
+
+            SDL_Rect bikeRect = { atual->x, atual->y, 30, 30 }; // Tamanho da bicicleta
+            SDL_RenderCopy(renderer, bikeTexture, NULL, &bikeRect);
+
+            SDL_DestroyTexture(bikeTexture);
             atual = atual->prox;
         }
 
@@ -194,6 +239,8 @@ int main(int argc, char* argv[]) {
     }
 
     // Limpar e fechar
+    TTF_CloseFont(font);
+    TTF_Quit();
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
