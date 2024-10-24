@@ -12,8 +12,8 @@ void drawTree(SDL_Renderer* renderer, int x, int y) {
     SDL_Rect darkFoliage = { x, y + 20, 60, 30 };   // Folhagem superior mais escura
     SDL_RenderFillRect(renderer, &darkFoliage);
 
-    // Desenhar a folhagem inferior da árvore (verde normal)
-    SDL_SetRenderDrawColor(renderer, 34, 139, 34, 255); // Verde escuro (RGB: 34, 139, 34)
+    // Desenhar a folhagem inferior da árvore (verde mais escuro logo acima do tronco)
+    SDL_SetRenderDrawColor(renderer, 0, 100, 0, 255); // Verde mais escuro (RGB: 0, 100, 0)
     SDL_Rect foliage = { x + 10, y + 25, 40, 30 }; // Folhagem inferior, mais próxima do tronco
     SDL_RenderFillRect(renderer, &foliage);
 }
@@ -61,16 +61,6 @@ int main(int argc, char* argv[]) {
     SDL_Rect middleRect = { 200, 0, 400, 600 };  // Parte do meio
     SDL_RenderFillRect(renderer, &middleRect);
 
-    // Desenhar árvores na lateral esquerda
-    drawTree(renderer, 50, 100);   // Árvore 1 na esquerda
-    drawTree(renderer, 50, 300);   // Árvore 2 na esquerda
-    drawTree(renderer, 50, 500);   // Árvore 3 na esquerda
-
-    // Desenhar árvores na lateral direita
-    drawTree(renderer, 650, 100);  // Árvore 1 na direita
-    drawTree(renderer, 650, 300);  // Árvore 2 na direita
-    drawTree(renderer, 650, 500);  // Árvore 3 na direita
-
     // Inicializar posição do player
     SDL_Rect player = { 390, 550, 20, 40 }; // Player no meio da estrada
 
@@ -83,10 +73,10 @@ int main(int argc, char* argv[]) {
     Uint32 startTime = SDL_GetTicks();
 
     while (running) {
-        // Verificar se já se passaram 15 segundos (15000 milissegundos)
+        // Verificar se já se passaram 5 segundos (5000 milissegundos)
         Uint32 elapsedTime = SDL_GetTicks() - startTime;
-        if (elapsedTime > 15000) {
-            running = 0; // Sair do loop após 15 segundos
+        if (elapsedTime > 5000) {
+            running = 0; // Sair do loop após 5 segundos
         }
 
         // Processar eventos
@@ -121,8 +111,34 @@ int main(int argc, char* argv[]) {
         SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255); // Cinza para a estrada
         SDL_RenderFillRect(renderer, &middleRect);
 
-        // Redesenhar árvores
-        drawTree(renderer, 50, 100);
+        // Desenhar um retângulo branco onde estava a árvore à esquerda
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // Branco (RGB: 255, 255, 255)
+        SDL_Rect whiteRect = { 50, 100, 70, 100 };  // Tamanho similar ao da árvore
+        SDL_RenderFillRect(renderer, &whiteRect);
+
+        // Desenhar um quadrado branco ao lado direito do retângulo
+        SDL_Rect whiteSquare = { 110, 140, 60, 60 };  // Quadrado com 80x80 ao lado direito do retângulo
+        SDL_RenderFillRect(renderer, &whiteSquare);
+
+        // Desenhar uma porta marrom
+        SDL_SetRenderDrawColor(renderer, 139, 69, 19, 255); // Marrom (RGB: 139, 69, 19)
+        SDL_Rect door = { 60, 140, 40, 60 };  // Porta marrom
+        SDL_RenderFillRect(renderer, &door);
+
+        // Desenhar uma cruz preta acima do retângulo branco
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Cor preta (RGB: 0, 0, 0)
+
+        // Coordenadas para a cruz
+        int crossX = 80; // X central da cruz
+        int crossY = 80; // Y central da cruz
+
+        // Linha vertical da cruz
+        SDL_RenderDrawLine(renderer, crossX, crossY - 10, crossX, crossY + 20); // Linha vertical
+
+        // Linha horizontal da cruz
+        SDL_RenderDrawLine(renderer, crossX - 10, crossY, crossX + 10, crossY); // Linha horizontal
+
+        // Redesenhar as árvores restantes
         drawTree(renderer, 50, 300);
         drawTree(renderer, 50, 500);
         drawTree(renderer, 650, 100);
