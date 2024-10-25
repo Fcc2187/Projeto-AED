@@ -64,6 +64,74 @@ int verificarColisao(SDL_Rect* player, Inimigo* inimigo) {
     return 0;
 }
 
+int exibirMenu(SDL_Renderer* renderer, TTF_Font* font) {
+    SDL_Event event;
+    int menuRunning = 1;
+
+    // Definindo o botão "Jogar"
+    SDL_Rect botaoJogar = { 300, 250, 200, 80 };
+
+    while (menuRunning) {
+        // Processar eventos do menu
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_QUIT) {
+                return 0; // Saia do jogo
+            } else if (event.type == SDL_MOUSEBUTTONDOWN) {
+                int mouseX = event.button.x;
+                int mouseY = event.button.y;
+                // Verifica se o clique foi dentro do botão "Jogar"
+                if (mouseX >= botaoJogar.x && mouseX <= botaoJogar.x + botaoJogar.w &&
+                    mouseY >= botaoJogar.y && mouseY <= botaoJogar.y + botaoJogar.h) {
+                    menuRunning = 0; // Inicie o jogo
+                }
+            }
+        }
+
+        // Limpar a tela
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        SDL_RenderClear(renderer);
+
+        // Desenhar o botão "Jogar"
+        SDL_SetRenderDrawColor(renderer, 0, 128, 0, 255); // Cor verde para o botão
+        SDL_RenderFillRect(renderer, &botaoJogar);
+
+        // Texto "Jogar" no botão
+        SDL_Color white = { 255, 255, 255, 255 };
+        SDL_Surface* surfaceTexto = TTF_RenderUTF8_Blended(font, "Jogar", white);
+        if (!surfaceTexto) {
+            printf("Erro ao criar superfície do texto: %s\n", TTF_GetError());
+        }
+        
+        SDL_Texture* textoTexture = SDL_CreateTextureFromSurface(renderer, surfaceTexto);
+        SDL_FreeSurface(surfaceTexto);
+        if (!textoTexture) {
+            printf("Erro ao criar textura do texto: %s\n", SDL_GetError());
+        }
+
+        // Obter as dimensões da textura do texto
+        int textoLargura, textoAltura;
+        SDL_QueryTexture(textoTexture, NULL, NULL, &textoLargura, &textoAltura);
+
+        // Centralizar o texto no botão
+        SDL_Rect textoRect = {
+            botaoJogar.x + (botaoJogar.w - textoLargura) / 2,
+            botaoJogar.y + (botaoJogar.h - textoAltura) / 2,
+            textoLargura,
+            textoAltura
+        };
+
+        // Renderizar o texto
+        SDL_RenderCopy(renderer, textoTexture, NULL, &textoRect);
+        SDL_DestroyTexture(textoTexture);
+
+        // Atualizar a tela
+        SDL_RenderPresent(renderer);
+    }
+
+    return 1; // O jogo deve iniciar
+}
+
+
 int main(int argc, char* argv[]) {
     // Inicializar a SDL
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
@@ -108,6 +176,16 @@ int main(int argc, char* argv[]) {
         TTF_Quit();
         SDL_Quit();
         return 1;
+    }
+
+    if (!exibirMenu(renderer, font)) {
+        // Se o menu retornar 0, o usuário decidiu sair do jogo
+        TTF_CloseFont(font);
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        TTF_Quit();
+        SDL_Quit();
+        return 0;
     }
 
     // Inicializar a fila de inimigos
