@@ -64,12 +64,17 @@ int verificarColisao(SDL_Rect* player, Inimigo* inimigo) {
     return 0;
 }
 
+
+
+
+// Rodar o menu
 int exibirMenu(SDL_Renderer* renderer, TTF_Font* font) {
     SDL_Event event;
     int menuRunning = 1;
 
-    // Definindo o botão "Jogar"
-    SDL_Rect botaoJogar = { 300, 250, 200, 80 };
+    // Definindo o botão "Jogar" com dimensões reduzidas
+    SDL_Rect botaoJogar = { 300, 260, 180, 70 }; // Dimensões do botão ajustadas
+    SDL_Rect botaoSair = { 300, 360, 180, 70 }; // Botão "SAIR" abaixo do botão "Jogar", com mais espaço
 
     while (menuRunning) {
         // Processar eventos do menu
@@ -79,50 +84,128 @@ int exibirMenu(SDL_Renderer* renderer, TTF_Font* font) {
             } else if (event.type == SDL_MOUSEBUTTONDOWN) {
                 int mouseX = event.button.x;
                 int mouseY = event.button.y;
+
                 // Verifica se o clique foi dentro do botão "Jogar"
                 if (mouseX >= botaoJogar.x && mouseX <= botaoJogar.x + botaoJogar.w &&
                     mouseY >= botaoJogar.y && mouseY <= botaoJogar.y + botaoJogar.h) {
                     menuRunning = 0; // Inicie o jogo
                 }
+                // Verifica se o clique foi dentro do botão "Sair"
+                else if (mouseX >= botaoSair.x && mouseX <= botaoSair.x + botaoSair.w &&
+                         mouseY >= botaoSair.y && mouseY <= botaoSair.y + botaoSair.h) {
+                    return 0; // Saia do jogo
+                }
             }
         }
 
-        // Limpar a tela
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        // Limpar a tela com a cor verde
+        SDL_SetRenderDrawColor(renderer, 75, 75, 75, 255); // Cor de fundo verde
         SDL_RenderClear(renderer);
 
-        // Desenhar o botão "Jogar"
-        SDL_SetRenderDrawColor(renderer, 0, 128, 0, 255); // Cor verde para o botão
-        SDL_RenderFillRect(renderer, &botaoJogar);
-
-        // Texto "Jogar" no botão
+        // Texto do título "JAQUEIRUN" em emojis no centro superior
         SDL_Color white = { 255, 255, 255, 255 };
-        SDL_Surface* surfaceTexto = TTF_RenderUTF8_Blended(font, "Jogar", white);
-        if (!surfaceTexto) {
-            printf("Erro ao criar superfície do texto: %s\n", TTF_GetError());
-        }
+        const char* emojisTitulo = "🇯 🇦 🇶 🇺 🇪 🇮 🇷 🇺 🇳";
         
-        SDL_Texture* textoTexture = SDL_CreateTextureFromSurface(renderer, surfaceTexto);
-        SDL_FreeSurface(surfaceTexto);
-        if (!textoTexture) {
-            printf("Erro ao criar textura do texto: %s\n", SDL_GetError());
+        // Criar uma superfície para os emojis do título
+        SDL_Surface* surfaceTitulo = TTF_RenderUTF8_Blended(font, emojisTitulo, white);
+        if (!surfaceTitulo) {
+            printf("Erro ao criar superfície do título: %s\n", TTF_GetError());
         }
 
-        // Obter as dimensões da textura do texto
-        int textoLargura, textoAltura;
-        SDL_QueryTexture(textoTexture, NULL, NULL, &textoLargura, &textoAltura);
+        SDL_Texture* tituloTexture = SDL_CreateTextureFromSurface(renderer, surfaceTitulo);
+        SDL_FreeSurface(surfaceTitulo);
+        if (!tituloTexture) {
+            printf("Erro ao criar textura do título: %s\n", SDL_GetError());
+        }
 
-        // Centralizar o texto no botão
-        SDL_Rect textoRect = {
-            botaoJogar.x + (botaoJogar.w - textoLargura) / 2,
-            botaoJogar.y + (botaoJogar.h - textoAltura) / 2,
-            textoLargura,
-            textoAltura
+        // Obter as dimensões da textura do título
+        int tituloLargura, tituloAltura;
+        SDL_QueryTexture(tituloTexture, NULL, NULL, &tituloLargura, &tituloAltura);
+
+        // Reduzir as dimensões do título e movê-lo mais para baixo
+        float scaleTitulo = 0.3; // Ajuste a escala conforme necessário
+        SDL_Rect tituloRect = {
+            (800 - (tituloLargura * scaleTitulo)) / 2, // Centraliza horizontalmente
+            40, // Margem do topo ajustada para mover o título para baixo
+            (int)(tituloLargura * scaleTitulo),
+            (int)(tituloAltura * scaleTitulo)
         };
 
-        // Renderizar o texto
-        SDL_RenderCopy(renderer, textoTexture, NULL, &textoRect);
-        SDL_DestroyTexture(textoTexture);
+        // Renderizar o título
+        SDL_RenderCopy(renderer, tituloTexture, NULL, &tituloRect);
+        SDL_DestroyTexture(tituloTexture);
+
+        // Texto "INICIAR" em emojis
+        const char* emojisIniciar = "🇮 🇳 🇮 🇨 🇮 🇦 🇷";
+        
+        // Criar uma superfície para os emojis "INICIAR"
+        SDL_Surface* surfaceIniciar = TTF_RenderUTF8_Blended(font, emojisIniciar, white);
+        if (!surfaceIniciar) {
+            printf("Erro ao criar superfície do título: %s\n", TTF_GetError());
+        }
+
+        SDL_Texture* iniciarTexture = SDL_CreateTextureFromSurface(renderer, surfaceIniciar);
+        SDL_FreeSurface(surfaceIniciar);
+        if (!iniciarTexture) {
+            printf("Erro ao criar textura do título: %s\n", SDL_GetError());
+        }
+
+        // Obter as dimensões da textura "INICIAR"
+        int iniciarLargura, iniciarAltura;
+        SDL_QueryTexture(iniciarTexture, NULL, NULL, &iniciarLargura, &iniciarAltura);
+
+        // Reduzir as dimensões do "INICIAR"
+        float scaleIniciar = 0.1; // Ajuste a escala para 0.1
+        SDL_Rect iniciarRect = {
+            botaoJogar.x + (botaoJogar.w - (iniciarLargura * scaleIniciar)) / 2, // Centraliza horizontalmente
+            botaoJogar.y - (iniciarAltura * scaleIniciar) - 10, // Posiciona acima do botão, ajustando a altura
+            (int)(iniciarLargura * scaleIniciar),
+            (int)(iniciarAltura * scaleIniciar)
+        };
+
+        // Renderizar o texto "INICIAR"
+        SDL_RenderCopy(renderer, iniciarTexture, NULL, &iniciarRect);
+        SDL_DestroyTexture(iniciarTexture);
+
+        // Desenhar o botão "Jogar" em cinza
+        SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255); // Cor cinza para o botão
+        SDL_RenderFillRect(renderer, &botaoJogar);
+
+        // Texto "SAIR" em emojis
+        const char* emojisSair = "🇸 🇦 🇮 🇷";
+        
+        // Criar uma superfície para os emojis "SAIR"
+        SDL_Surface* surfaceSair = TTF_RenderUTF8_Blended(font, emojisSair, white);
+        if (!surfaceSair) {
+            printf("Erro ao criar superfície do título: %s\n", TTF_GetError());
+        }
+
+        SDL_Texture* sairTexture = SDL_CreateTextureFromSurface(renderer, surfaceSair);
+        SDL_FreeSurface(surfaceSair);
+        if (!sairTexture) {
+            printf("Erro ao criar textura do título: %s\n", SDL_GetError());
+        }
+
+        // Obter as dimensões da textura "SAIR"
+        int sairLargura, sairAltura;
+        SDL_QueryTexture(sairTexture, NULL, NULL, &sairLargura, &sairAltura);
+
+        // Reduzir as dimensões do "SAIR"
+        float scaleSair = 0.1; // Ajuste a escala para 0.1
+        SDL_Rect sairRect = {
+            botaoSair.x + (botaoSair.w - (sairLargura * scaleSair)) / 2, // Centraliza horizontalmente
+            botaoSair.y - (sairAltura * scaleSair) - 10, // Posiciona acima do botão, ajustando a altura
+            (int)(sairLargura * scaleSair),
+            (int)(sairAltura * scaleSair)
+        };
+
+        // Renderizar o texto "SAIR"
+        SDL_RenderCopy(renderer, sairTexture, NULL, &sairRect);
+        SDL_DestroyTexture(sairTexture);
+
+        // Desenhar o botão "Sair" em vermelho
+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // Cor vermelha para o botão
+        SDL_RenderFillRect(renderer, &botaoSair);
 
         // Atualizar a tela
         SDL_RenderPresent(renderer);
@@ -132,6 +215,13 @@ int exibirMenu(SDL_Renderer* renderer, TTF_Font* font) {
 }
 
 
+
+
+
+
+
+
+//Rodar o jogo
 int main(int argc, char* argv[]) {
     // Inicializar a SDL
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
@@ -311,7 +401,7 @@ int main(int argc, char* argv[]) {
         SDL_DestroyTexture(playerTexture);
 
         // Criar novos inimigos a cada 1 segundo (1000 ms)
-        if (tempoParaNovoInimigo > 200) {
+        if (tempoParaNovoInimigo > 150) {
             int inimigoX = 200 + rand() % 380; // Posição aleatória na estrada (parte cinza)
             adicionarInimigo(&filaInimigos, inimigoX, 0); // Adicionar inimigo no topo
             tempoParaNovoInimigo = 0; // Resetar o tempo
