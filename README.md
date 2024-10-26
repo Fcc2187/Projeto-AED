@@ -6,7 +6,7 @@ Projeto da Cadeira de AED do terceiro período do semestre 2024.2
 Nossa referência foi o Parque da Jaqueira, um dos espaços públicos ao ar livre mais visitados e conhecidos de Recife.
 
 No Jaqueirun, você controla um pedestre caminhando pelo Parque da Jaqueira. 
-Sua missão é desviar dos ciclistas que surgem pelo caminho e evitar colisões, tenha cuidado e divirta-se ⚠️.
+Sua missão é desviar dos ciclistas que surgem pelo caminho e evitar colisões, preste bem atenção e divirta-se 🤗.
 
 ## Equipe
 
