@@ -21,3 +21,10 @@ Projeto da Cadeira de AED do terceiro período do semestre 2024.2
 - 2- Baixe: brew install sdl2 sdl2_ttf
 - 3- Rode: gcc -o game code.c -I/opt/homebrew/include/ -L/opt/homebrew/lib -lSDL2 -lSDL2_ttf
 - 4- Execute:./exec_jogo
+
+## Pendências
+- Adicionar Botões de Cicuitos e Ranking no Menu
+- Implementar a Função de Ranking
+- Estilizar o Menu
+- Criar um ou dois circuitos diferentes
+- Ajustar o Contador
