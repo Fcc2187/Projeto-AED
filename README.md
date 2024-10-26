@@ -26,5 +26,5 @@ Projeto da Cadeira de AED do terceiro período do semestre 2024.2
 - Adicionar Botões de Cicuitos e Ranking no Menu
 - Implementar a Função de Ranking
 - Estilizar o Menu
-- Criar um ou dois circuitos diferentes
-- Ajustar o Contador
+- Criar um ou dois circuitos diferentes ( a decidir ... )
+- Ajustar o Contador ( em desenvolvimento )
