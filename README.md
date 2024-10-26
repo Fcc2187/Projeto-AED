@@ -18,11 +18,6 @@ Projeto da Cadeira de AED do terceiro período do semestre 2024.2
 
 ## Instruções para Apple Silicon
 - 1- Baixe o homebrew: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-
 - 2- Baixe: brew install sdl2 sdl2_ttf
-
- 
 - 3- Rode: gcc -o game code.c -I/opt/homebrew/include/ -L/opt/homebrew/lib -lSDL2 -lSDL2_ttf
-
-  
 - 4- Execute:./exec_jogo
