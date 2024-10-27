@@ -25,8 +25,9 @@ Sua missão é desviar dos ciclistas que surgem pelo caminho e evitar colisões,
 ## Instruções para Apple Silicon
 - 1- Baixe o homebrew: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 - 2- Baixe: brew install sdl2 sdl2_ttf
-- 3- Rode: gcc -o game code.c -I/opt/homebrew/include/ -L/opt/homebrew/lib -lSDL2 -lSDL2_ttf
-- 4- Execute:./exec_jogo
+- 3- troque a linha 239 para: TTF_Font *font = TTF_OpenFont("/System/Library/Fonts/Apple Color Emoji.ttc", 24);
+- 4- Rode: gcc code.c -o jogo -I/opt/homebrew/include -L/opt/homebrew/lib -lSDL2 -lSDL2_ttf
+- 5- Execute: ./jogo
 
 ## Pendências
 - Adicionar Botões de Cicuitos e Ranking no Menu
