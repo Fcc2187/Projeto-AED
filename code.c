@@ -236,7 +236,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    TTF_Font* font = TTF_OpenFont("/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf", 24);
+    TTF_Font *font = TTF_OpenFont("/System/Library/Fonts/Apple Color Emoji.ttc", 24);
     if (!font) {
         printf("Erro ao carregar a fonte: %s\n", TTF_GetError());
         return 1;
@@ -315,12 +315,19 @@ int main(int argc, char* argv[]) {
     // Posição do playground
     SDL_Rect playgroundRect = { 650, 500, 80, 80 }; // Ajuste a posição e tamanho do playground
 
+    int contadorSegundos = 0;
     while (running) {
         // Verificar se já se passaram 25 segundos (25000 milissegundos)
         Uint32 elapsedTime = SDL_GetTicks() - startTime;
         if (elapsedTime > 25000) {
             running = 0; // Sair do loop após 25 segundos
         }
+
+
+         if (elapsedTime / 1000 > contadorSegundos) {
+        contadorSegundos++;
+        printf("Tempo decorrido: %d segundos\n", contadorSegundos); // Exibir o tempo decorrido em segundos
+    }
 
         // Processar eventos
         while (SDL_PollEvent(&event)) {
@@ -444,6 +451,14 @@ int main(int argc, char* argv[]) {
         // Incrementar o tempo para novos inimigos
         tempoParaNovoInimigo += 16;
     }
+
+    FILE *arquivo = fopen("tempo_final.txt", "w");
+if (arquivo != NULL) {
+    fprintf(arquivo, "Tempo final: %d segundos\n", contadorSegundos);
+    fclose(arquivo);
+} else {
+    printf("Erro ao abrir o arquivo!\n");
+}
 
     // Limpar e fechar
     TTF_CloseFont(font);
