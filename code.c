@@ -456,7 +456,7 @@ int main(int argc, char* argv[]) {
         tempoParaNovoInimigo += 16;
     }
 
-    FILE *arquivo = fopen("tempo_final.txt", "w");
+    FILE *arquivo = fopen("tempo_final.txt", "a");
 if (arquivo != NULL) {
     fprintf(arquivo, "Tempo final: %d segundos\n", contadorSegundos);
     fclose(arquivo);
