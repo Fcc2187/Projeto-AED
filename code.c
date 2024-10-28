@@ -236,7 +236,11 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    TTF_Font *font = TTF_OpenFont("/System/Library/Fonts/Apple Color Emoji.ttc", 24);
+    //MacBook
+    //TTF_Font *font = TTF_OpenFont("/System/Library/Fonts/Apple Color Emoji.ttc", 24);
+    //Linux
+    TTF_Font *font = TTF_OpenFont("/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf", 24);
+    
     if (!font) {
         printf("Erro ao carregar a fonte: %s\n", TTF_GetError());
         return 1;
