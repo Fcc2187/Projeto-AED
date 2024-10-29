@@ -368,8 +368,21 @@ void insertSort(int arr[], int n) {
     }
 }
 
-int main(int argc, char* argv[]) {
+void salvarPontuacao(const char* nome, int pontuacao) {
+    FILE* arquivo = fopen("ranking.txt", "a");
+    if (arquivo) {
+        fprintf(arquivo, "%s: %d\n", nome, pontuacao);
+        fclose(arquivo);
+    }
+}
 
+void solicitarNome(char* nomeJogador, int tamanho) {
+    printf("Digite seu nome: ");
+    fgets(nomeJogador, tamanho, stdin);
+    nomeJogador[strcspn(nomeJogador, "\n")] = 0;
+}
+
+int main(int argc, char* argv[]) {
     SDL_Window* window = NULL;
     SDL_Renderer* renderer = NULL;
     TTF_Font* font = NULL;
@@ -378,7 +391,22 @@ int main(int argc, char* argv[]) {
     if (!exibirMenu(renderer, font)) return 0;
 
     SDL_Rect player = {390, 550, 30, 40};
+
+    // Variável para armazenar a pontuação
+    int pontuacao = 0;
+
+    // Iniciar o loop do jogo
     loopJogo(renderer, font, &player);
+
+    // Aumentar a pontuação (exemplo)
+    pontuacao += 100; // Suponha que o jogador ganhou 100 pontos
+
+    // Solicitar o nome do jogador após o término do jogo
+    char nomeJogador[50];
+    solicitarNome(nomeJogador, sizeof(nomeJogador));
+
+    // Salvar a pontuação no arquivo
+    salvarPontuacao(nomeJogador, pontuacao);
 
     TTF_CloseFont(font);
     TTF_Quit();
