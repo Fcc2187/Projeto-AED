@@ -6,7 +6,6 @@
 
 #define MAX_INIMIGOS 100
 #define DISTANCIA_MINIMA 50 // Distância mínima entre as árvores
-#define TOP_SIZE 5 // Tamanho do top ranking
 
 // Estrutura para um inimigo
 typedef struct Inimigo {
@@ -54,46 +53,6 @@ void removerInimigo(FilaInimigos* fila) {
     }
 }
 
-// Função para ordenar tempos usando Bubble Sort e gravar o top 5
-void ordenarTop5(int *tempos, int total) {
-    int i, j, temp;
-    for (i = 0; i < total - 1; i++) {
-        for (j = 0; j < total - i - 1; j++) {
-            if (tempos[j] < tempos[j + 1]) { // Ordem decrescente
-                temp = tempos[j];
-                tempos[j] = tempos[j + 1];
-                tempos[j + 1] = temp;
-            }
-        }
-    }
-    // Salvar top 5 tempos no arquivo "top5_tempo.txt"
-    FILE *arquivoTop5 = fopen("ranking.txt", "w");
-    if (arquivoTop5 != NULL) {
-        for (i = 0; i < total && i < TOP_SIZE; i++) {
-            fprintf(arquivoTop5, "%d\n", tempos[i]);
-        }
-        fclose(arquivoTop5);
-    }
-}
-
-// Função para carregar os tempos e atualizar o top 5
-void atualizarTop5(int novoTempo) {
-    int tempos[100];
-    int total = 0;
-    // Ler tempos do arquivo
-    FILE *arquivo = fopen("tempo_final.txt", "r");
-    if (arquivo != NULL) {
-        while (fscanf(arquivo, "%d", &tempos[total]) == 1 && total < 100) {
-            total++;
-        }
-        fclose(arquivo);
-    }
-    // Adicionar o novo tempo
-    tempos[total++] = novoTempo;
-    // Ordenar e salvar o top 5
-    ordenarETop5(tempos, total);
-}
-
 // Função para verificar colisão
 int verificarColisao(SDL_Rect* player, Inimigo* inimigo) {
     if (player->x < inimigo->x + inimigo->w &&
@@ -104,9 +63,6 @@ int verificarColisao(SDL_Rect* player, Inimigo* inimigo) {
     }
     return 0;
 }
-
-
-
 
 // Rodar o menu
 int exibirMenu(SDL_Renderer* renderer, TTF_Font* font) {
@@ -237,237 +193,180 @@ int exibirMenu(SDL_Renderer* renderer, TTF_Font* font) {
     return 1; // O jogo deve iniciar
 }
 
-//Rodar o jogo
-int main(int argc, char* argv[]) {
-    // Inicializar a SDL
-    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-        return 1;
-    }
-
-    // Inicializar a SDL_ttf
+// Função para inicializar SDL e TTF, criar janela e renderizador
+int inicializarSDL(SDL_Window** window, SDL_Renderer** renderer, TTF_Font** font) {
+    if (SDL_Init(SDL_INIT_VIDEO) != 0) return 1;
     if (TTF_Init() == -1) {
         SDL_Quit();
         return 1;
     }
 
-    //MacBook
-    //TTF_Font *font = TTF_OpenFont("/System/Library/Fonts/Apple Color Emoji.ttc", 24);
-    //Linux
-    TTF_Font *font = TTF_OpenFont("/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf", 24);
-    
-    if (!font) {
-        return 1;
-    }
+    *font = TTF_OpenFont("/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf", 24); // Fonte para Linux
+    if (!*font) return 1;
 
-    // Criar uma janela
-    SDL_Window* window = SDL_CreateWindow(
-        "Tela jogo principal",   // Título da janela
-        SDL_WINDOWPOS_CENTERED,           // Posição X
-        SDL_WINDOWPOS_CENTERED,           // Posição Y
-        800, 600,                         // Largura e altura
-        SDL_WINDOW_SHOWN                  // Mostra a janela
-    );
-
-    if (!window) {
+    *window = SDL_CreateWindow("Tela jogo principal", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_SHOWN);
+    if (!*window) {
         TTF_Quit();
         SDL_Quit();
         return 1;
     }
 
-    // Criar um renderizador associado à janela
-    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    if (!renderer) {
-        SDL_DestroyWindow(window);
+    *renderer = SDL_CreateRenderer(*window, -1, SDL_RENDERER_ACCELERATED);
+    if (!*renderer) {
+        SDL_DestroyWindow(*window);
         TTF_Quit();
         SDL_Quit();
         return 1;
     }
 
-    if (!exibirMenu(renderer, font)) {
-        // Se o menu retornar 0, o usuário decidiu sair do jogo
-        TTF_CloseFont(font);
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
-        TTF_Quit();
-        SDL_Quit();
-        return 0;
+    return 0;
+}
+
+// Função para desenhar objetos estáticos (árvores, igreja, playground e estrada)
+void desenharObjetosFixos(SDL_Renderer* renderer, TTF_Font* font, SDL_Rect* playgroundRect) {
+    SDL_Color white = {255, 255, 255, 255};
+    SDL_Surface* surfaceTree = TTF_RenderUTF8_Blended(font, "🌳", white);
+    SDL_Texture* treeTexture = SDL_CreateTextureFromSurface(renderer, surfaceTree);
+    SDL_FreeSurface(surfaceTree);
+
+    int posicoesArvores[10] = {50, 50, 650, 650, 650, 50, 650, 50};
+    int alturasArvores[10] = {180, 300, 100, 200, 300, 400, 400, 500};
+
+    for (int i = 0; i < 8; i++) {
+        SDL_Rect treeRect = {posicoesArvores[i], alturasArvores[i], 50, 80};
+        SDL_RenderCopy(renderer, treeTexture, NULL, &treeRect);
+    }
+    SDL_DestroyTexture(treeTexture);
+
+    SDL_Surface* surfaceChurch = TTF_RenderUTF8_Blended(font, "⛪️", white);
+    SDL_Texture* churchTexture = SDL_CreateTextureFromSurface(renderer, surfaceChurch);
+    SDL_FreeSurface(surfaceChurch);
+    SDL_Rect churchRect = {10, 20, 130, 130};
+    SDL_RenderCopy(renderer, churchTexture, NULL, &churchRect);
+    SDL_DestroyTexture(churchTexture);
+
+    SDL_Surface* surfacePlayground = TTF_RenderUTF8_Blended(font, "🛝", white);
+    SDL_Texture* playgroundTexture = SDL_CreateTextureFromSurface(renderer, surfacePlayground);
+    SDL_FreeSurface(surfacePlayground);
+    SDL_RenderCopy(renderer, playgroundTexture, NULL, playgroundRect);
+    SDL_DestroyTexture(playgroundTexture);
+
+    SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
+    SDL_Rect middleRect = {200, 0, 400, 600};
+    SDL_RenderFillRect(renderer, &middleRect);
+}
+
+// Função para atualizar o movimento e renderização do player
+void atualizarPlayer(SDL_Renderer* renderer, TTF_Font* font, SDL_Rect* player, int playerDirection) {
+    SDL_Color white = {255, 255, 255, 255};
+    SDL_Surface* surfacePlayer = TTF_RenderUTF8_Blended(font, "🏃‍♂️", white);
+    SDL_Texture* playerTexture = SDL_CreateTextureFromSurface(renderer, surfacePlayer);
+    SDL_FreeSurface(surfacePlayer);
+
+    SDL_Rect playerRect = {player->x, player->y, 30, 40};
+    SDL_RenderCopy(renderer, playerTexture, NULL, &playerRect);
+    SDL_DestroyTexture(playerTexture);
+}
+
+// Função para atualizar inimigos, adicionar novos e verificar colisões
+void atualizarInimigos(SDL_Renderer* renderer, TTF_Font* font, FilaInimigos* filaInimigos, SDL_Rect* player, int* running, int* tempoParaNovoInimigo) {
+    if (*tempoParaNovoInimigo > 150) {
+        int inimigoX = 200 + rand() % 380;
+        adicionarInimigo(filaInimigos, inimigoX, 0);
+        *tempoParaNovoInimigo = 0;
     }
 
-    // Inicializar a fila de inimigos
+    Inimigo* atual = filaInimigos->frente;
+    while (atual != NULL) {
+        atual->y += 5;
+        if (atual->y > 600) removerInimigo(filaInimigos);
+        if (verificarColisao(player, atual)) *running = 0;
+        atual = atual->prox;
+    }
+
+    atual = filaInimigos->frente;
+    while (atual != NULL) {
+        SDL_Color white = {255, 255, 255, 255};
+        SDL_Surface* surfaceBike = TTF_RenderUTF8_Blended(font, "🚴", white);
+        SDL_Texture* bikeTexture = SDL_CreateTextureFromSurface(renderer, surfaceBike);
+        SDL_FreeSurface(surfaceBike);
+
+        SDL_Rect bikeRect = {atual->x, atual->y, 50, 50};
+        SDL_RenderCopy(renderer, bikeTexture, NULL, &bikeRect);
+        SDL_DestroyTexture(bikeTexture);
+        atual = atual->prox;
+    }
+}
+
+// Loop principal do jogo
+void loopJogo(SDL_Renderer* renderer, TTF_Font* font, SDL_Rect* player) {
     FilaInimigos filaInimigos;
     inicializarFila(&filaInimigos);
 
-    // Inicializar posição do player (emoji de pessoa em movimento)
-    SDL_Rect player = { 390, 550, 30, 40 }; // Player no meio da estrada
-    int playerDirection = 0; // 0 para direita, 1 para esquerda
-
-    // Variáveis de controle do jogo
     int running = 1;
-    SDL_Event event;
     int speed = 5;
-    int tempoParaNovoInimigo = 0; // Controlar o tempo para criar novos inimigos
-
-    // Capturar o tempo inicial
+    int tempoParaNovoInimigo = 0;
+    int contadorSegundos = 0;
     Uint32 startTime = SDL_GetTicks();
 
-    // Inicializar a semente para números aleatórios
-    srand(time(NULL));
+    SDL_Event event;
+    SDL_Rect playgroundRect = {650, 500, 80, 80};
+    int playerDirection = 0;
 
-    // Posições fixas das árvores (X e Y) - agora com 9 árvores
-    int posicoesArvores[10] = {50, 50, 650, 650, 650, 50, 650, 50 }; // X fixo para a esquerda e direita
-    int alturasArvores[10] = {180, 300, 100, 200, 300, 400, 400, 500}; // Alturas fixas das árvores
-
-    // Definindo tamanhos dos emojis
-    int playerEmojiWidth = 30; // Largura do emoji do jogador
-    int playerEmojiHeight = 40; // Altura do emoji do jogador
-    int bikeEmojiWidth = 50;    // Largura do emoji da bicicleta
-    int bikeEmojiHeight = 50;    // Altura do emoji da bicicleta
-
-    // Adicionar posição e altura da igreja
-    int churchWidth = 130; // Largura da igreja
-    int churchHeight = 130; // Altura da igreja
-
-    // Posição do playground
-    SDL_Rect playgroundRect = { 650, 500, 80, 80 }; // Ajuste a posição e tamanho do playground
-
-    int contadorSegundos = 0;
     while (running) {
         Uint32 elapsedTime = SDL_GetTicks() - startTime;
+        if (elapsedTime / 1000 > contadorSegundos) {
+            contadorSegundos++;
+            printf("Tempo decorrido: %d segundos\n", contadorSegundos);
+        }
 
-         if (elapsedTime / 1000 > contadorSegundos) {
-        contadorSegundos++;
-        printf("Tempo decorrido: %d segundos\n", contadorSegundos); // Exibir o tempo decorrido em segundos
-    }
-
-        // Processar eventos
         while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_QUIT) {
-                running = 0;
-            } else if (event.type == SDL_KEYDOWN) {
+            if (event.type == SDL_QUIT) running = 0;
+            else if (event.type == SDL_KEYDOWN) {
                 switch (event.key.keysym.sym) {
                     case SDLK_LEFT:
-                        // Mover o player para a esquerda
-                        player.x -= speed;
-                        if (player.x < 200) player.x = 200; // Limite da estrada à esquerda
-                        playerDirection = 1; // Direção para a esquerda
+                        player->x -= speed;
+                        if (player->x < 200) player->x = 200;
+                        playerDirection = 1;
                         break;
                     case SDLK_RIGHT:
-                        // Mover o player para a direita
-                        player.x += speed;
-                        if (player.x + player.w > 600) player.x = 600 - player.w; // Limite da estrada à direita
-                        playerDirection = 0; // Direção para a direita
+                        player->x += speed;
+                        if (player->x + player->w > 600) player->x = 600 - player->w;
+                        playerDirection = 0;
                         break;
                 }
             }
         }
 
-        // Limpar a tela
-        SDL_SetRenderDrawColor(renderer, 34, 139, 34, 255); // Verde para as laterais
+        SDL_SetRenderDrawColor(renderer, 34, 139, 34, 255);
         SDL_RenderClear(renderer);
 
-        // Redesenhar as laterais (verde)
-        SDL_Rect leftRect = { 0, 0, 200, 600 };
-        SDL_Rect rightRect = { 600, 0, 200, 600 };
-        SDL_RenderFillRect(renderer, &leftRect);
-        SDL_RenderFillRect(renderer, &rightRect);
+        desenharObjetosFixos(renderer, font, &playgroundRect);
+        atualizarPlayer(renderer, font, player, playerDirection);
+        atualizarInimigos(renderer, font, &filaInimigos, player, &running, &tempoParaNovoInimigo);
 
-        // Desenhar as árvores estáticas (emojis de árvore)
-        SDL_Color white = { 255, 255, 255, 255 };
-        SDL_Surface* surfaceTree = TTF_RenderUTF8_Blended(font, "🌳", white);
-        SDL_Texture* treeTexture = SDL_CreateTextureFromSurface(renderer, surfaceTree);
-        SDL_FreeSurface(surfaceTree);
-
-        // Posicionamento das árvores
-        for (int i = 0; i < 8; i++) { // 9 árvores no total
-            SDL_Rect treeRect = { posicoesArvores[i], alturasArvores[i], 50, 80 }; // Ajustar a posição e o tamanho da árvore
-            SDL_RenderCopy(renderer, treeTexture, NULL, &treeRect);
-        }
-
-        SDL_DestroyTexture(treeTexture);
-
-        // Desenhar a igreja (emoji de igreja) na posição da última árvore
-        SDL_Surface* surfaceChurch = TTF_RenderUTF8_Blended(font, "⛪️", white);
-        SDL_Texture* churchTexture = SDL_CreateTextureFromSurface(renderer, surfaceChurch);
-        SDL_FreeSurface(surfaceChurch);
-        int posicaoIgreja = 10;
-        int alturaIgreja = 20;
-        SDL_Rect churchRect = { posicaoIgreja, alturaIgreja, churchWidth, churchHeight }; // Posição e tamanho da igreja
-        SDL_RenderCopy(renderer, churchTexture, NULL, &churchRect);
-        SDL_DestroyTexture(churchTexture);
-        SDL_Surface* surfacePlayground = TTF_RenderUTF8_Blended(font, "🛝", white); // Emoji de parque infantil
-        SDL_Texture* playgroundTexture = SDL_CreateTextureFromSurface(renderer, surfacePlayground);
-        SDL_FreeSurface(surfacePlayground);
-
-        SDL_RenderCopy(renderer, playgroundTexture, NULL, &playgroundRect); // Posição do playground
-        SDL_DestroyTexture(playgroundTexture);
-
-        // Redesenhar a estrada (cinza)
-        SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255); // Cinza para a estrada
-        SDL_Rect middleRect = { 200, 0, 400, 600 };
-        SDL_RenderFillRect(renderer, &middleRect);
-
-        // Desenhar o player (emoji de pessoa em movimento)
-        SDL_Surface* surfacePlayer;
-        surfacePlayer = TTF_RenderUTF8_Blended(font, "🏃‍♂️", white); // Emoji de pessoa correndo
-        SDL_Texture* playerTexture = SDL_CreateTextureFromSurface(renderer, surfacePlayer);
-        SDL_FreeSurface(surfacePlayer);
-
-        // Ajustar o tamanho do emoji do personagem
-        SDL_Rect playerRect = { player.x, player.y, playerEmojiWidth, playerEmojiHeight }; // Ajustar a largura e altura do personagem
-        SDL_RenderCopy(renderer, playerTexture, NULL, &playerRect);
-        SDL_DestroyTexture(playerTexture);
-
-        // Criar novos inimigos a cada 1 segundo (1000 ms)
-        if (tempoParaNovoInimigo > 150) {
-            int inimigoX = 200 + rand() % 380; // Posição aleatória na estrada (parte cinza)
-            adicionarInimigo(&filaInimigos, inimigoX, 0); // Adicionar inimigo no topo
-            tempoParaNovoInimigo = 0; // Resetar o tempo
-        }
-
-        // Atualizar posição dos inimigos
-        Inimigo* atual = filaInimigos.frente;
-        while (atual != NULL) {
-            atual->y += 5; // Descer o inimigo
-            if (atual->y > 600) {
-                removerInimigo(&filaInimigos); // Remover inimigos que saíram da tela
-            }
-            if (verificarColisao(&player, atual)) {
-                running = 0; // Fim de jogo se colidir com o player
-            }
-            atual = atual->prox;
-        }
-
-        atual = filaInimigos.frente;
-        while (atual != NULL) {
-            SDL_Color white = { 255, 255, 255, 255 };
-            SDL_Surface* surfaceBike = TTF_RenderUTF8_Blended(font, "🚴", white);
-            SDL_Texture* bikeTexture = SDL_CreateTextureFromSurface(renderer, surfaceBike);
-            SDL_FreeSurface(surfaceBike);
-
-            // Ajustar o tamanho do emoji da bicicleta
-            SDL_Rect bikeRect = { atual->x, atual->y, bikeEmojiWidth, bikeEmojiHeight }; // Ajustar a largura e altura da bicicleta
-            SDL_RenderCopy(renderer, bikeTexture, NULL, &bikeRect);
-
-            SDL_DestroyTexture(bikeTexture);
-            atual = atual->prox;
-        }
-
-        // Atualizar a tela
         SDL_RenderPresent(renderer);
-
-        // Controlar a taxa de atualização
-        SDL_Delay(16); // Aproximadamente 60 FPS
-
-        // Incrementar o tempo para novos inimigos
+        SDL_Delay(16);
         tempoParaNovoInimigo += 16;
     }
-
     FILE *arquivo = fopen("tempo_final.txt", "a");
     if (arquivo != NULL) {
         fprintf(arquivo, "Tempo final: %d segundos\n", contadorSegundos);
         fclose(arquivo);
     }
-    // Limpar e fechar
+}
+
+int main(int argc, char* argv[]) {
+    SDL_Window* window = NULL;
+    SDL_Renderer* renderer = NULL;
+    TTF_Font* font = NULL;
+
+    if (inicializarSDL(&window, &renderer, &font) != 0) return 1;
+    if (!exibirMenu(renderer, font)) return 0;
+
+    SDL_Rect player = {390, 550, 30, 40};
+    loopJogo(renderer, font, &player);
+
     TTF_CloseFont(font);
     TTF_Quit();
     SDL_DestroyRenderer(renderer);
