@@ -6,6 +6,7 @@
 
 #define MAX_INIMIGOS 100
 #define DISTANCIA_MINIMA 50 // Distância mínima entre as árvores
+#define TOP_SIZE 5 // Tamanho do top ranking
 
 // Estrutura para um inimigo
 typedef struct Inimigo {
@@ -51,6 +52,46 @@ void removerInimigo(FilaInimigos* fila) {
             fila->tras = NULL;
         }
     }
+}
+
+// Função para ordenar tempos usando Bubble Sort e gravar o top 5
+void ordenarTop5(int *tempos, int total) {
+    int i, j, temp;
+    for (i = 0; i < total - 1; i++) {
+        for (j = 0; j < total - i - 1; j++) {
+            if (tempos[j] < tempos[j + 1]) { // Ordem decrescente
+                temp = tempos[j];
+                tempos[j] = tempos[j + 1];
+                tempos[j + 1] = temp;
+            }
+        }
+    }
+    // Salvar top 5 tempos no arquivo "top5_tempo.txt"
+    FILE *arquivoTop5 = fopen("ranking.txt", "w");
+    if (arquivoTop5 != NULL) {
+        for (i = 0; i < total && i < TOP_SIZE; i++) {
+            fprintf(arquivoTop5, "%d\n", tempos[i]);
+        }
+        fclose(arquivoTop5);
+    }
+}
+
+// Função para carregar os tempos e atualizar o top 5
+void atualizarTop5(int novoTempo) {
+    int tempos[100];
+    int total = 0;
+    // Ler tempos do arquivo
+    FILE *arquivo = fopen("tempo_final.txt", "r");
+    if (arquivo != NULL) {
+        while (fscanf(arquivo, "%d", &tempos[total]) == 1 && total < 100) {
+            total++;
+        }
+        fclose(arquivo);
+    }
+    // Adicionar o novo tempo
+    tempos[total++] = novoTempo;
+    // Ordenar e salvar o top 5
+    ordenarETop5(tempos, total);
 }
 
 // Função para verificar colisão
@@ -196,13 +237,6 @@ int exibirMenu(SDL_Renderer* renderer, TTF_Font* font) {
     return 1; // O jogo deve iniciar
 }
 
-
-
-
-
-
-
-
 //Rodar o jogo
 int main(int argc, char* argv[]) {
     // Inicializar a SDL
@@ -227,7 +261,7 @@ int main(int argc, char* argv[]) {
 
     // Criar uma janela
     SDL_Window* window = SDL_CreateWindow(
-        "Minha janela SDL com Árvores",   // Título da janela
+        "Tela jogo principal",   // Título da janela
         SDL_WINDOWPOS_CENTERED,           // Posição X
         SDL_WINDOWPOS_CENTERED,           // Posição Y
         800, 600,                         // Largura e altura
