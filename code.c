@@ -108,15 +108,9 @@ int exibirMenu(SDL_Renderer* renderer, TTF_Font* font) {
         
         // Criar uma superfície para os emojis do título
         SDL_Surface* surfaceTitulo = TTF_RenderUTF8_Blended(font, emojisTitulo, white);
-        if (!surfaceTitulo) {
-            printf("Erro ao criar superfície do título: %s\n", TTF_GetError());
-        }
 
         SDL_Texture* tituloTexture = SDL_CreateTextureFromSurface(renderer, surfaceTitulo);
         SDL_FreeSurface(surfaceTitulo);
-        if (!tituloTexture) {
-            printf("Erro ao criar textura do título: %s\n", SDL_GetError());
-        }
 
         // Obter as dimensões da textura do título
         int tituloLargura, tituloAltura;
@@ -140,15 +134,9 @@ int exibirMenu(SDL_Renderer* renderer, TTF_Font* font) {
         
         // Criar uma superfície para os emojis "INICIAR"
         SDL_Surface* surfaceIniciar = TTF_RenderUTF8_Blended(font, emojisIniciar, white);
-        if (!surfaceIniciar) {
-            printf("Erro ao criar superfície do título: %s\n", TTF_GetError());
-        }
 
         SDL_Texture* iniciarTexture = SDL_CreateTextureFromSurface(renderer, surfaceIniciar);
         SDL_FreeSurface(surfaceIniciar);
-        if (!iniciarTexture) {
-            printf("Erro ao criar textura do título: %s\n", SDL_GetError());
-        }
 
         // Obter as dimensões da textura "INICIAR"
         int iniciarLargura, iniciarAltura;
@@ -176,15 +164,9 @@ int exibirMenu(SDL_Renderer* renderer, TTF_Font* font) {
         
         // Criar uma superfície para os emojis "SAIR"
         SDL_Surface* surfaceSair = TTF_RenderUTF8_Blended(font, emojisSair, white);
-        if (!surfaceSair) {
-            printf("Erro ao criar superfície do título: %s\n", TTF_GetError());
-        }
 
         SDL_Texture* sairTexture = SDL_CreateTextureFromSurface(renderer, surfaceSair);
         SDL_FreeSurface(surfaceSair);
-        if (!sairTexture) {
-            printf("Erro ao criar textura do título: %s\n", SDL_GetError());
-        }
 
         // Obter as dimensões da textura "SAIR"
         int sairLargura, sairAltura;
@@ -225,13 +207,11 @@ int exibirMenu(SDL_Renderer* renderer, TTF_Font* font) {
 int main(int argc, char* argv[]) {
     // Inicializar a SDL
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-        printf("Erro ao inicializar SDL: %s\n", SDL_GetError());
         return 1;
     }
 
     // Inicializar a SDL_ttf
     if (TTF_Init() == -1) {
-        printf("Erro ao inicializar SDL_ttf: %s\n", TTF_GetError());
         SDL_Quit();
         return 1;
     }
@@ -242,7 +222,6 @@ int main(int argc, char* argv[]) {
     TTF_Font *font = TTF_OpenFont("/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf", 24);
     
     if (!font) {
-        printf("Erro ao carregar a fonte: %s\n", TTF_GetError());
         return 1;
     }
 
@@ -256,7 +235,6 @@ int main(int argc, char* argv[]) {
     );
 
     if (!window) {
-        printf("Erro ao criar a janela: %s\n", SDL_GetError());
         TTF_Quit();
         SDL_Quit();
         return 1;
@@ -265,7 +243,6 @@ int main(int argc, char* argv[]) {
     // Criar um renderizador associado à janela
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (!renderer) {
-        printf("Erro ao criar renderizador: %s\n", SDL_GetError());
         SDL_DestroyWindow(window);
         TTF_Quit();
         SDL_Quit();
@@ -321,12 +298,7 @@ int main(int argc, char* argv[]) {
 
     int contadorSegundos = 0;
     while (running) {
-        // Verificar se já se passaram 25 segundos (25000 milissegundos)
         Uint32 elapsedTime = SDL_GetTicks() - startTime;
-        if (elapsedTime > 25000) {
-            running = 0; // Sair do loop após 25 segundos
-        }
-
 
          if (elapsedTime / 1000 > contadorSegundos) {
         contadorSegundos++;
@@ -457,13 +429,10 @@ int main(int argc, char* argv[]) {
     }
 
     FILE *arquivo = fopen("tempo_final.txt", "a");
-if (arquivo != NULL) {
-    fprintf(arquivo, "Tempo final: %d segundos\n", contadorSegundos);
-    fclose(arquivo);
-} else {
-    printf("Erro ao abrir o arquivo!\n");
-}
-
+    if (arquivo != NULL) {
+        fprintf(arquivo, "Tempo final: %d segundos\n", contadorSegundos);
+        fclose(arquivo);
+    }
     // Limpar e fechar
     TTF_CloseFont(font);
     TTF_Quit();
