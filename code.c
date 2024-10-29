@@ -351,8 +351,20 @@ void loopJogo(SDL_Renderer* renderer, TTF_Font* font, SDL_Rect* player) {
     }
     FILE *arquivo = fopen("tempo_final.txt", "a");
     if (arquivo != NULL) {
-        fprintf(arquivo, "Tempo final: %d segundos\n", contadorSegundos);
+        fprintf(arquivo, "%d\n", contadorSegundos);
         fclose(arquivo);
+    }
+}
+
+void insertSort(int arr[], int n) {
+    for (int i = 1; i < n; i++) {
+        int key = arr[i];
+        int j = i - 1;
+        while (j >= 0 && arr[j] < key) {
+            arr[j + 1] = arr[j];
+            j = j - 1;
+        }
+        arr[j + 1] = key;
     }
 }
 
@@ -372,6 +384,32 @@ int main(int argc, char* argv[]) {
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
+
+    FILE *inputFile = fopen("tempo_final.txt", "r");
+    FILE *outputFile = fopen("ranking.txt", "w");
+    if (inputFile == NULL || outputFile == NULL) {
+        return 1;
+    }
+
+    int numbers[100];
+    int count = 0;
+
+    // Leitura dos números do arquivo
+    while (fscanf(inputFile, "%d", &numbers[count]) != EOF) {
+        count++;
+    }
+
+    fclose(inputFile);
+
+    // Ordenação dos números
+    insertSort(numbers, count);
+
+    // Escrita dos números ordenados no arquivo ranking.txt
+    for (int i = 0; i < count; i++) {
+        fprintf(outputFile, "%d\n", numbers[i]);
+    }
+
+    fclose(outputFile);
 
     return 0;
 }

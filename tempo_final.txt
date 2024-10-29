@@ -1,4 +1,6 @@
-Tempo final: 6 segundos
-Tempo final: 14 segundos
-Tempo final: 11 segundos
-Tempo final: 6 segundos
+2
+4
+6
+10
+3
+6
