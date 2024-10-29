@@ -382,6 +382,40 @@ void solicitarNome(char* nomeJogador, int tamanho) {
     nomeJogador[strcspn(nomeJogador, "\n")] = 0;
 }
 
+// Função para ler os números do arquivo tempo_final.txt
+void lerTempoFinal(int* numbers, int* count) {
+    FILE* inputFile = fopen("tempo_final.txt", "r");
+    if (inputFile == NULL) {
+        *count = 0; // Se não conseguir abrir o arquivo, define count como 0
+        return;
+    }
+
+    // Leitura dos números do arquivo
+    while (fscanf(inputFile, "%d", &numbers[*count]) != EOF) {
+        (*count)++;
+    }
+
+    fclose(inputFile);
+}
+
+// Função para ordenar os números e escrever no arquivo ranking.txt
+void ordenarEEscreverRanking(int* numbers, int count) {
+    FILE* outputFile = fopen("ranking.txt", "w");
+    if (outputFile == NULL) {
+        return;
+    }
+
+    // Ordenação dos números
+    insertSort(numbers, count); // Presumindo que insertSort está definida em outro lugar
+
+    // Escrita dos números ordenados no arquivo ranking.txt
+    for (int i = 0; i < count; i++) {
+        fprintf(outputFile, "%d\n", numbers[i]);
+    }
+
+    fclose(outputFile);
+}
+
 int main(int argc, char* argv[]) {
     SDL_Window* window = NULL;
     SDL_Renderer* renderer = NULL;
@@ -391,8 +425,6 @@ int main(int argc, char* argv[]) {
     if (!exibirMenu(renderer, font)) return 0;
 
     SDL_Rect player = {390, 550, 30, 40};
-
-    // Variável para armazenar a pontuação
     int pontuacao = 0;
 
     // Iniciar o loop do jogo
@@ -414,31 +446,11 @@ int main(int argc, char* argv[]) {
     SDL_DestroyWindow(window);
     SDL_Quit();
 
-    FILE *inputFile = fopen("tempo_final.txt", "r");
-    FILE *outputFile = fopen("ranking.txt", "w");
-    if (inputFile == NULL || outputFile == NULL) {
-        return 1;
-    }
-
+    // Leitura dos números do arquivo e escrita no ranking
     int numbers[100];
     int count = 0;
-
-    // Leitura dos números do arquivo
-    while (fscanf(inputFile, "%d", &numbers[count]) != EOF) {
-        count++;
-    }
-
-    fclose(inputFile);
-
-    // Ordenação dos números
-    insertSort(numbers, count);
-
-    // Escrita dos números ordenados no arquivo ranking.txt
-    for (int i = 0; i < count; i++) {
-        fprintf(outputFile, "%d\n", numbers[i]);
-    }
-
-    fclose(outputFile);
+    lerTempoFinal(numbers, &count);
+    ordenarEEscreverRanking(numbers, count);
 
     return 0;
 }
