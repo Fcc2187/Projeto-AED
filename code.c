@@ -369,6 +369,7 @@ void insertSort(int arr[], int n) {
 }
 
 int main(int argc, char* argv[]) {
+
     SDL_Window* window = NULL;
     SDL_Renderer* renderer = NULL;
     TTF_Font* font = NULL;
