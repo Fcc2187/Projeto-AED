@@ -19,6 +19,18 @@ typedef struct {
     Inimigo* tras;
 } FilaInimigos;
 
+// Estrutura para uma manga
+typedef struct Manga {
+    int x, y, w, h;
+    struct Manga* prox;
+} Manga;
+
+// Estrutura para a fila de mangas
+typedef struct {
+    Manga* frente;
+    Manga* tras;
+} FilaManga;
+
 // Função para inicializar a fila
 void inicializarFila(FilaInimigos* fila) {
     fila->frente = fila->tras = NULL;
@@ -63,6 +75,53 @@ int verificarColisao(SDL_Rect* player, Inimigo* inimigo) {
     }
     return 0;
 }
+
+
+// Função para inicializar a fila
+void inicializarManga(FilaManga* fila) {
+    fila->frente = fila->tras = NULL;
+}
+
+// Função para adicionar inimigo na fila
+void adicionarManga(FilaManga* fila, int x, int y) {
+    Manga* novaManga = (Manga*)malloc(sizeof(Manga));
+    novaManga->x = x;
+    novaManga->y = y;
+    novaManga->w = 20;
+    novaManga->h = 20;
+    novaManga->prox = NULL;
+
+    if (fila->tras == NULL) {
+        fila->frente = fila->tras = novaManga;
+    } else {
+        fila->tras->prox = novaManga;
+        fila->tras = novaManga;
+    }
+}
+
+// Função para remover inimigo da fila (quando sair da tela)
+void removerManga(FilaManga* fila) {
+    if (fila->frente != NULL) {
+        Manga* temp = fila->frente;
+        fila->frente = fila->frente->prox;
+        free(temp);
+        if (fila->frente == NULL) {
+            fila->tras = NULL;
+        }
+    }
+}
+
+// Função para verificar colisão
+int mangaColisao(SDL_Rect* player, Manga* manga) {
+    if (player->x < manga->x + manga->w &&
+        player->x + player->w > manga->x &&
+        player->y < manga->y + manga->h &&
+        player->y + player->h > manga->y) {
+        return 1; // Houve colisão
+    }
+    return 0;
+}
+
 
 // Rodar o menu
 int exibirMenu(SDL_Renderer* renderer, TTF_Font* font) {
@@ -259,7 +318,7 @@ void desenharObjetosFixos(SDL_Renderer* renderer, TTF_Font* font, SDL_Rect* play
 // Função para atualizar o movimento e renderização do player
 void atualizarPlayer(SDL_Renderer* renderer, TTF_Font* font, SDL_Rect* player, int playerDirection) {
     SDL_Color white = {255, 255, 255, 255};
-    SDL_Surface* surfacePlayer = TTF_RenderUTF8_Blended(font, "🏃‍♂️", white);
+    SDL_Surface* surfacePlayer = TTF_RenderUTF8_Blended(font, "🚴", white);
     SDL_Texture* playerTexture = SDL_CreateTextureFromSurface(renderer, surfacePlayer);
     SDL_FreeSurface(surfacePlayer);
 
@@ -287,7 +346,7 @@ void atualizarInimigos(SDL_Renderer* renderer, TTF_Font* font, FilaInimigos* fil
     atual = filaInimigos->frente;
     while (atual != NULL) {
         SDL_Color white = {255, 255, 255, 255};
-        SDL_Surface* surfaceBike = TTF_RenderUTF8_Blended(font, "🚴", white);
+        SDL_Surface* surfaceBike = TTF_RenderUTF8_Blended(font, "🏃‍♂️", white);
         SDL_Texture* bikeTexture = SDL_CreateTextureFromSurface(renderer, surfaceBike);
         SDL_FreeSurface(surfaceBike);
 
@@ -298,15 +357,48 @@ void atualizarInimigos(SDL_Renderer* renderer, TTF_Font* font, FilaInimigos* fil
     }
 }
 
+void atualizarMangas(SDL_Renderer* renderer, TTF_Font* font, FilaManga* filaManga, SDL_Rect* player, int* running, int* tempoParaNovaManga, int contadorMangas) {
+    if (*tempoParaNovaManga > 150) {
+        int mangaX = 200 + rand() % 380;
+        adicionarManga(filaManga, mangaX, 0);
+        *tempoParaNovaManga = 0;
+    }
+
+    Manga* atual = filaManga->frente;
+    while (atual != NULL) {
+        atual->y += 5;
+        if (atual->y > 600) removerManga(filaManga);
+        if (mangaColisao(player, atual)) contadorMangas += 10;
+        atual = atual->prox;
+    }
+
+    atual = filaManga->frente;
+    while (atual != NULL) {
+        SDL_Color white = {255, 255, 255, 255};
+        SDL_Surface* surfaceBike = TTF_RenderUTF8_Blended(font, "🥭", white);
+        SDL_Texture* bikeTexture = SDL_CreateTextureFromSurface(renderer, surfaceBike);
+        SDL_FreeSurface(surfaceBike);
+
+        SDL_Rect bikeRect = {atual->x, atual->y, 30, 30};
+        SDL_RenderCopy(renderer, bikeTexture, NULL, &bikeRect);
+        SDL_DestroyTexture(bikeTexture);
+        atual = atual->prox;
+    }
+}
+
 // Loop principal do jogo
 void loopJogo(SDL_Renderer* renderer, TTF_Font* font, SDL_Rect* player) {
     FilaInimigos filaInimigos;
     inicializarFila(&filaInimigos);
+    FilaManga filaMangas;
+    inicializarManga(&filaMangas);
 
     int running = 1;
     int speed = 5;
     int tempoParaNovoInimigo = 0;
+    int tempoParaNovaManga = 0;
     int contadorSegundos = 0;
+    int contadorMangas = 0;
     Uint32 startTime = SDL_GetTicks();
 
     SDL_Event event;
@@ -344,14 +436,17 @@ void loopJogo(SDL_Renderer* renderer, TTF_Font* font, SDL_Rect* player) {
         desenharObjetosFixos(renderer, font, &playgroundRect);
         atualizarPlayer(renderer, font, player, playerDirection);
         atualizarInimigos(renderer, font, &filaInimigos, player, &running, &tempoParaNovoInimigo);
+        atualizarMangas(renderer, font, &filaMangas, player, &running, &tempoParaNovaManga, contadorMangas);
 
         SDL_RenderPresent(renderer);
         SDL_Delay(16);
-        tempoParaNovoInimigo += 16;
+        tempoParaNovoInimigo += 12;
+        tempoParaNovaManga += 3;
     }
+    int conTotal = contadorSegundos + contadorMangas;
     FILE *arquivo = fopen("tempo_final.txt", "a");
     if (arquivo != NULL) {
-        fprintf(arquivo, "%d\n", contadorSegundos);
+        fprintf(arquivo, "%d\n", conTotal);
         fclose(arquivo);
     }
 }
