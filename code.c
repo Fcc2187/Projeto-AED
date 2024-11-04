@@ -357,7 +357,7 @@ void atualizarInimigos(SDL_Renderer* renderer, TTF_Font* font, FilaInimigos* fil
     }
 }
 
-void atualizarMangas(SDL_Renderer* renderer, TTF_Font* font, FilaManga* filaManga, SDL_Rect* player, int* running, int* tempoParaNovaManga, int contadorMangas) {
+void atualizarMangas(SDL_Renderer* renderer, TTF_Font* font, FilaManga* filaManga, SDL_Rect* player, int* running, int* tempoParaNovaManga, int *contadorMangas) {
     if (*tempoParaNovaManga > 150) {
         int mangaX = 200 + rand() % 380;
         adicionarManga(filaManga, mangaX, 0);
@@ -368,7 +368,9 @@ void atualizarMangas(SDL_Renderer* renderer, TTF_Font* font, FilaManga* filaMang
     while (atual != NULL) {
         atual->y += 5;
         if (atual->y > 600) removerManga(filaManga);
-        if (mangaColisao(player, atual)) contadorMangas += 10;
+        if (mangaColisao(player, atual)){
+         *contadorMangas += 1;
+         }
         atual = atual->prox;
     }
 
@@ -430,23 +432,25 @@ void loopJogo(SDL_Renderer* renderer, TTF_Font* font, SDL_Rect* player) {
             }
         }
 
+
         SDL_SetRenderDrawColor(renderer, 34, 139, 34, 255);
         SDL_RenderClear(renderer);
 
         desenharObjetosFixos(renderer, font, &playgroundRect);
         atualizarPlayer(renderer, font, player, playerDirection);
         atualizarInimigos(renderer, font, &filaInimigos, player, &running, &tempoParaNovoInimigo);
-        atualizarMangas(renderer, font, &filaMangas, player, &running, &tempoParaNovaManga, contadorMangas);
+        atualizarMangas(renderer, font, &filaMangas, player, &running, &tempoParaNovaManga, &contadorMangas);
 
         SDL_RenderPresent(renderer);
         SDL_Delay(16);
         tempoParaNovoInimigo += 12;
         tempoParaNovaManga += 3;
     }
+
     int conTotal = contadorSegundos + contadorMangas;
     FILE *arquivo = fopen("tempo_final.txt", "a");
     if (arquivo != NULL) {
-        fprintf(arquivo, "%d\n", conTotal);
+        fprintf(arquivo, " %d \n", conTotal);
         fclose(arquivo);
     }
 }
