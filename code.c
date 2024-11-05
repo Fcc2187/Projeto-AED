@@ -455,15 +455,56 @@ void loopJogo(SDL_Renderer* renderer, TTF_Font* font, SDL_Rect* player) {
     }
 }
 
-void insertSort(int arr[], int n) {
-    for (int i = 1; i < n; i++) {
-        int key = arr[i];
-        int j = i - 1;
-        while (j >= 0 && arr[j] < key) {
-            arr[j + 1] = arr[j];
-            j = j - 1;
+
+void merge(int arr[], int left, int mid, int right) {
+    int n1 = mid - left + 1;
+    int n2 = right - mid;
+
+    // Arrays temporários para dividir e mesclar
+    int L[n1], R[n2];
+
+    for (int i = 0; i < n1; i++)
+        L[i] = arr[left + i];
+    for (int j = 0; j < n2; j++)
+        R[j] = arr[mid + 1 + j];
+
+    int i = 0, j = 0, k = left;
+
+    // Mesclando os arrays temporários de volta ao original
+    while (i < n1 && j < n2) {
+        if (L[i] >= R[j]) {  // Ordenando em ordem decrescente
+            arr[k] = L[i];
+            i++;
+        } else {
+            arr[k] = R[j];
+            j++;
         }
-        arr[j + 1] = key;
+        k++;
+    }
+
+    // Copia os elementos restantes de L[], se houver
+    while (i < n1) {
+        arr[k] = L[i];
+        i++;
+        k++;
+    }
+
+    // Copia os elementos restantes de R[], se houver
+    while (j < n2) {
+        arr[k] = R[j];
+        j++;
+        k++;
+    }
+}
+
+void mergeSort(int arr[], int left, int right) {
+    if (left < right) {
+        int mid = left + (right - left) / 2;
+
+        mergeSort(arr, left, mid);
+        mergeSort(arr, mid + 1, right);
+
+        merge(arr, left, mid, right);
     }
 }
 
@@ -504,8 +545,8 @@ void ordenarEEscreverRanking(int* numbers, int count) {
         return;
     }
 
-    // Ordenação dos números
-    insertSort(numbers, count); // Presumindo que insertSort está definida em outro lugar
+    // Ordenação dos números com Merge Sort
+    mergeSort(numbers, 0, count - 1);
 
     // Escrita dos números ordenados no arquivo ranking.txt
     for (int i = 0; i < count; i++) {
@@ -514,6 +555,7 @@ void ordenarEEscreverRanking(int* numbers, int count) {
 
     fclose(outputFile);
 }
+
 
 int main(int argc, char* argv[]) {
     SDL_Window* window = NULL;
