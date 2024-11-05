@@ -14,7 +14,7 @@ typedef struct Inimigo {
 } Inimigo;
 
 // Estrutura para a fila de inimigos
-typedef struct {
+typedef struct FilaInimigos{
     Inimigo* frente;
     Inimigo* tras;
 } FilaInimigos;
@@ -26,7 +26,7 @@ typedef struct Manga {
 } Manga;
 
 // Estrutura para a fila de mangas
-typedef struct {
+typedef struct FilaManga{
     Manga* frente;
     Manga* tras;
 } FilaManga;
