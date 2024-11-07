@@ -18,8 +18,8 @@ Sua missão é desviar dos pedestres que surgem pelo caminho e evitar colisões,
 
 ## Para compilar Linux
 - Atualize: sudo apt-get update
-- Baixe: sudo apt-get install libsdl2-dev libsdl2-ttf-dev
-- Rode: gcc code.c -o exec_jogo -lSDL2 -lSDL2_ttf
+- Baixe: sudo apt-get install libsdl2-dev libsdl2-ttf-dev libsdl2-mixer-dev
+- Rode: gcc code.c -o exec_jogo -lSDL2 -lSDL2_ttf -lSDL2_mixer
 - Rode: ./exec_jogo
 
 ## Pendências
