@@ -3,7 +3,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <SDL2/SDL_mixer.h>
 
+Mix_Music *musica = NULL;
 #define MAX_INIMIGOS 100
 #define DISTANCIA_MINIMA 50 // Distância mínima entre as árvores
 
@@ -254,8 +256,24 @@ int exibirMenu(SDL_Renderer* renderer, TTF_Font* font) {
 
 // Função para inicializar SDL e TTF, criar janela e renderizador
 int inicializarSDL(SDL_Window** window, SDL_Renderer** renderer, TTF_Font** font) {
-    if (SDL_Init(SDL_INIT_VIDEO) != 0) return 1;
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) return 1;
     if (TTF_Init() == -1) {
+        SDL_Quit();
+        return 1;
+    }
+
+    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+        printf("Erro ao inicializar SDL_Mixer: %s\n", Mix_GetError());
+        TTF_Quit();
+        SDL_Quit();
+        return 1;
+    }
+
+    musica = Mix_LoadMUS("musica/trilhasonora.mp3");  // Substitua pelo caminho correto
+    if (!musica) {
+        printf("Erro ao carregar música: %s\n", Mix_GetError());
+        Mix_CloseAudio();
+        TTF_Quit();
         SDL_Quit();
         return 1;
     }
@@ -265,6 +283,7 @@ int inicializarSDL(SDL_Window** window, SDL_Renderer** renderer, TTF_Font** font
 
     *window = SDL_CreateWindow("Tela jogo principal", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_SHOWN);
     if (!*window) {
+        Mix_CloseAudio();
         TTF_Quit();
         SDL_Quit();
         return 1;
@@ -273,6 +292,7 @@ int inicializarSDL(SDL_Window** window, SDL_Renderer** renderer, TTF_Font** font
     *renderer = SDL_CreateRenderer(*window, -1, SDL_RENDERER_ACCELERATED);
     if (!*renderer) {
         SDL_DestroyWindow(*window);
+        Mix_CloseAudio();
         TTF_Quit();
         SDL_Quit();
         return 1;
@@ -556,13 +576,24 @@ void ordenarEEscreverRanking(int* numbers, int count) {
     fclose(outputFile);
 }
 
-
 int main(int argc, char* argv[]) {
     SDL_Window* window = NULL;
     SDL_Renderer* renderer = NULL;
     TTF_Font* font = NULL;
 
-    if (inicializarSDL(&window, &renderer, &font) != 0) return 1;
+    if (inicializarSDL(&window, &renderer, &font) != 0) {
+        printf("Erro ao inicializar SDL\n");
+        return 1;
+    }
+
+    Mix_Music* musicaFundo = Mix_LoadMUS("musica/trilhasonora.mp3");
+    if (!musicaFundo) {
+        printf("Erro ao carregar música: %s\n", Mix_GetError());
+    } else {
+        Mix_VolumeMusic(MIX_MAX_VOLUME / 3);
+        Mix_PlayMusic(musicaFundo, 0);  // Toca a música indefinidamente
+    }
+
     if (!exibirMenu(renderer, font)) return 0;
 
     SDL_Rect player = {390, 550, 30, 40};
@@ -581,6 +612,9 @@ int main(int argc, char* argv[]) {
     // Salvar a pontuação no arquivo
     salvarPontuacao(nomeJogador, pontuacao);
 
+    Mix_HaltMusic();
+    Mix_FreeMusic(musica);
+    Mix_CloseAudio(); 
     TTF_CloseFont(font);
     TTF_Quit();
     SDL_DestroyRenderer(renderer);
