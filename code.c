@@ -5,6 +5,7 @@
 #include <time.h>
 #include <SDL2/SDL_mixer.h>
 
+Mix_Chunk *somColisao = NULL;
 Mix_Music *musica = NULL;
 #define MAX_INIMIGOS 100
 #define DISTANCIA_MINIMA 50 // Distância mínima entre as árvores
@@ -278,6 +279,11 @@ int inicializarSDL(SDL_Window** window, SDL_Renderer** renderer, TTF_Font** font
         return 1;
     }
 
+    somColisao = Mix_LoadWAV("musica/comer.mp3"); // Substitua pelo caminho correto
+    if (!somColisao) {
+        printf("Erro ao carregar som de colisão: %s\n", Mix_GetError());
+    }
+
     *font = TTF_OpenFont("/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf", 24); // Fonte para Linux
     if (!*font) return 1;
 
@@ -389,7 +395,9 @@ void atualizarMangas(SDL_Renderer* renderer, TTF_Font* font, FilaManga* filaMang
         atual->y += 5;
         if (atual->y > 600) removerManga(filaManga);
         if (mangaColisao(player, atual)){
-         *contadorMangas += 1;
+            *contadorMangas += 1;
+            Mix_PlayChannel(-1, somColisao, 0); // Toca o som de colisão
+            removerManga(filaManga); // Remove a manga após a colisão
          }
         atual = atual->prox;
     }
@@ -612,6 +620,7 @@ int main(int argc, char* argv[]) {
     // Salvar a pontuação no arquivo
     salvarPontuacao(nomeJogador, pontuacao);
 
+    Mix_FreeChunk(somColisao);
     Mix_HaltMusic();
     Mix_FreeMusic(musica);
     Mix_CloseAudio(); 
