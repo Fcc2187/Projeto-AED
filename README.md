@@ -23,5 +23,4 @@ Sua missão é desviar dos pedestres que surgem pelo caminho e evitar colisões,
 - Rode: ./exec_jogo
 
 ## Pendências
-- Adicionar nome no ranking
-- Adicionar som no jogo
+- Jogo Concluído com sucesso
