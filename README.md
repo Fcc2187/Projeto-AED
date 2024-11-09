@@ -8,6 +8,10 @@ Exclusivo para Linux, o nosso jogo teve como referência o Parque da Jaqueira, u
 No Jaqueirun, você controla um ciclista pedalando pelo Parque da Jaqueira. 
 Sua missão é desviar dos pedestres que surgem pelo caminho e evitar colisões, preste bem atenção e divirta-se 🤗.
 
+Caso queira uma explicação melhor de como foi feito a ideação e todo conceito por trás do nosso jogo, consulte nosso slide de apresentação 🤗.
+
+Slide : https://www.canva.com/design/DAGVuhjkvPA/XkB_eHN_ldZ-f-YXpVmv5w/edit
+
 ## Equipe
 
 - André Castro - alcms@cesar.school 📩 
