@@ -80,12 +80,12 @@ int verificarColisao(SDL_Rect* player, Inimigo* inimigo) {
 }
 
 
-// Função para inicializar a fila
+// Função para inicializar a manga
 void inicializarManga(FilaManga* fila) {
     fila->frente = fila->tras = NULL;
 }
 
-// Função para adicionar inimigo na fila
+// Função para adicionar manga na fila
 void adicionarManga(FilaManga* fila, int x, int y) {
     Manga* novaManga = (Manga*)malloc(sizeof(Manga));
     novaManga->x = x;
@@ -102,7 +102,7 @@ void adicionarManga(FilaManga* fila, int x, int y) {
     }
 }
 
-// Função para remover inimigo da fila (quando sair da tela)
+// Função para remover manga da fila (quando sair da tela)
 void removerManga(FilaManga* fila) {
     if (fila->frente != NULL) {
         Manga* temp = fila->frente;
@@ -114,7 +114,7 @@ void removerManga(FilaManga* fila) {
     }
 }
 
-// Função para verificar colisão
+// Função para verificar colisão da manga com o player
 int mangaColisao(SDL_Rect* player, Manga* manga) {
     if (player->x < manga->x + manga->w &&
         player->x + player->w > manga->x &&
